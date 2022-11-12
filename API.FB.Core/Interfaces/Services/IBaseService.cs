@@ -1,31 +1,27 @@
-﻿using API.FB.Core.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace API.FB.Core.Interfaces.Services
+namespace CNWTTBL.Interfaces.Services
 {
-    public interface IBaseService<MISAEntity>
+    public interface IBaseService<T>
     {
-        #region Methods
 
         /// <summary>
-        /// Thêm mới dữ liệu
+        /// Xử lí nghiệp vụ chung khi thêm mới đối tượng
         /// </summary>
-        /// <param name="entity">Dữ liệu truyền vào</param>
-        /// <returns></returns>
-        /// CreatedBy: PHDUONG(27/08/2021)
-        ServiceResult Add(MISAEntity entity);
+        /// <param name="entity"> Đối tượng thêm mới </param>
+        /// <returns> Số lượng bản ghi </returns>
+        int InsertService(T entity);
 
         /// <summary>
-        /// Sửa dữ liệu trong DataBase
+        /// Xử lí nghiệp vụ khi sửa dối tượng
         /// </summary>
-        /// <param name="entity">Dữ liệu truyền vào</param>
+        /// <param name="entityId"> Id của đối tượng </param>
+        /// <param name="entity"> đối tượng đã sửa </param>
         /// <returns></returns>
-        /// CreatedBy: PHDUONG(27/08/2021)
-        ServiceResult Update(MISAEntity entity, Guid entityId);
-        #endregion
+        int UpdateService(Guid entityId, T entity);
     }
 }
