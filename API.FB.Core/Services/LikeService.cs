@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace CNWTTBL.Services
 {
-    public class LikeService : BaseService<Like>, ILikeService
+    public class LikeService 
     {
         ILikeRepo _likeRepo;
-        public LikeService(ILikeRepo likeRepo) : base(likeRepo)
+        public LikeService(ILikeRepo likeRepo) 
         {
             _likeRepo = likeRepo;
         }

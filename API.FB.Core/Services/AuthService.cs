@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace CNWTTBL.Services
 {
-    public class AuthService : BaseService<User>, IAuthService
+    public class AuthService : IAuthService
     {
         IAuthRepo _authRepo;
-        public AuthService(IAuthRepo authRepo) : base(authRepo)
+        public AuthService(IAuthRepo authRepo) 
         {
             _authRepo = authRepo;
         }

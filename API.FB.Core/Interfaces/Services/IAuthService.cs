@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CNWTTBL.Interfaces.Services
 {
-    public interface IAuthService : IBaseService<User>
+    public interface IAuthService
     {
     }
 }

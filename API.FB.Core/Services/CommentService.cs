@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace CNWTTBL.Services
 {
-    public class CommentService : BaseService<Comment>, ICommentService
+    public class CommentService : ICommentService
     {
         ICommentRepo _commentRepo;
-        public CommentService(ICommentRepo commentRepo) : base(commentRepo)
+        public CommentService(ICommentRepo commentRepo) 
         {
             _commentRepo = commentRepo;
         }

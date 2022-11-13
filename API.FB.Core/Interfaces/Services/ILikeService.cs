@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CNWTTBL.Interfaces.Services
 {
-    public interface ILikeService : IBaseService<Like>
+    public interface ILikeService
     {
     }
 }
