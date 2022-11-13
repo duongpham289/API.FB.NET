@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CNWTTBL.Interfaces.Services;
-using CNWTTBL.Interfaces.Repositories;
 using CNWTTBL.Services;
 using CNWTTDL.Repository;
+using API.FB.Core.Interfaces.Repository;
 
 namespace Web07.FinalTest.MF960
 {

@@ -1,13 +1,10 @@
 ﻿using CNWTTBL.Entities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CNWTTBL.Interfaces.Repositories
+namespace API.FB.Core.Interfaces.Repository
 {
-    public interface IPostRepo : IBaseRepo<Post>
+    public interface IPostRepo 
     {
 
         /// <summary>

@@ -1,5 +1,4 @@
-﻿using CNWTTBL.Core.BaseAttribute;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -8,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace CNWTTBL.Entities
 {
-    public class Post : BaseEntity
+    public class Post 
     {
-        [PrimaryKey]
         [Required(ErrorMessage ="ID của bài đăng phải được thiết lập")]
         public int PostID { get; set; }
         [Required(ErrorMessage ="Bài đăng không được để trống")]

@@ -1,5 +1,5 @@
-﻿using CNWTTBL.Entities;
-using CNWTTBL.Interfaces.Repositories;
+﻿using API.FB.Core.Interfaces.Repository;
+using CNWTTBL.Entities;
 using CNWTTBL.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -8,7 +8,7 @@ using System;
 
 namespace CNWTT.Controllers
 {
-    [Route("api/fb/[controller]")]
+    [Route("fb")]
     [ApiController]
     public class CommentController : ControllerBase
     {
@@ -21,8 +21,8 @@ namespace CNWTT.Controllers
             _commentService = commentService;
         }
 
-        [HttpGet("getComment/{postId}")]
-        public IActionResult Get(Guid postId)
+        [HttpGet("getComment")]
+        public IActionResult Get([FromQuery]Guid postId)
         {
             
                 var res = _commentRepo.GetByPostId(postId);
@@ -30,8 +30,8 @@ namespace CNWTT.Controllers
             
         }
 
-        [HttpPut("edit_comment/{postId}")]
-        public IActionResult Put(Guid postId)
+        [HttpPut("edit_comment")]
+        public IActionResult Put([FromQuery]Guid postId)
         {
             
                 var res = _commentService.editComment(postId);

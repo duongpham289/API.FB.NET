@@ -1,5 +1,5 @@
-﻿using CNWTTBL.Entities;
-using CNWTTBL.Interfaces.Repositories;
+﻿using API.FB.Core.Interfaces.Repository;
+using CNWTTBL.Entities;
 using CNWTTBL.Interfaces.Services;
 using System;
 using System.Collections.Generic;

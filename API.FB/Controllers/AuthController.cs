@@ -1,24 +1,24 @@
 ﻿using API.FB.Core.Entities;
+using API.FB.Core.Interfaces.Repository;
 using CNWTTBL.Entities;
-using CNWTTBL.Interfaces.Repositories;
 using CNWTTBL.Interfaces.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using MISA.Core.Exceptions;
-using System.IdentityModel.Tokens.Jwt;
+//using Microsoft.IdentityModel.Tokens;
+//using MISA.Core.Exceptions;
+//using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace CNWTT.Controllers
+namespace Api.fb.Controllers
 {
-    [Route("api/fb/[controller]")]
+    [Route("fb")]
     [ApiController]
     public class AuthController : ControllerBase
     {

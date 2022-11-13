@@ -1,14 +1,10 @@
 ﻿using API.FB.Core.Interfaces.Services;
-using CNWTTBL.Entities;
-using CNWTTBL.Interfaces.Repositories;
-using CNWTTBL.Interfaces.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
 namespace CNWTT.Controllers
 {
-    [Route("api/fb/[controller]")]
+    [Route("fb")]
     [ApiController]
     public class ReportController : ControllerBase
     {
@@ -20,8 +16,8 @@ namespace CNWTT.Controllers
 
         }
 
-        [HttpGet("report/{postId}")]
-        public IActionResult ReportPost(Guid postId)
+        [HttpGet("report")]
+        public IActionResult ReportPost([FromQuery] Guid postId)
         {
             
                 var res = _reportService.ReportPost(postId);

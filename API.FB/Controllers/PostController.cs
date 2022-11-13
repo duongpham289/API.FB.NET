@@ -1,12 +1,12 @@
-﻿using CNWTTBL.Entities;
-using CNWTTBL.Interfaces.Repositories;
+﻿using API.FB.Core.Interfaces.Repository;
+using CNWTTBL.Entities;
 using CNWTTBL.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
 namespace CNWTT.Controllers
 {
-    [Route("api/fb/[controller]")]
+    [Route("fb")]
     [ApiController]
     public class PostController : ControllerBase
     {
@@ -25,8 +25,8 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <returns></returns>
         ///  CreatedBy: PHDUONG(27/08/2021)
-        [HttpGet("getListPost/{userID}")]
-        public virtual IActionResult GetListPost(Guid userID)
+        [HttpGet("getListPost")]
+        public virtual IActionResult GetListPost([FromQuery]Guid userID)
         {
             try
             {
@@ -61,8 +61,8 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <returns></returns>
         ///  CreatedBy: PHDUONG(27/08/2021)
-        [HttpGet("getNewPost/{userID}/{newestPostID}")]
-        public  IActionResult GetNewListPost(Guid userID, int newestPostID)
+        [HttpGet("getNewPost")]
+        public  IActionResult GetNewListPost([FromQuery] Guid userID, [FromQuery]int newestPostID)
         {
             try
             {
@@ -114,7 +114,7 @@ namespace CNWTT.Controllers
         /// <returns></returns>
         // PUT api/<MISABaseController>/5
         [HttpPut("edit_post")]
-        public virtual IActionResult Put(Guid entityId, [FromBody] Post entity)
+        public virtual IActionResult Put([FromQuery] Guid entityId, [FromBody] Post entity)
         {
             
                 var res = _postService.UpdatePost(entityId, entity);
@@ -128,7 +128,7 @@ namespace CNWTT.Controllers
         /// <param name="entityId"> Id của đối tượng </param>
         /// <returns></returns>
         [HttpDelete("delete_post")]
-        public virtual IActionResult Delete(Guid entityId)
+        public virtual IActionResult Delete([FromQuery] Guid entityId)
         {
             
                 var res = _postService.DeletePost(entityId);

@@ -1,5 +1,4 @@
 ﻿using CNWTTBL.Entities;
-using CNWTTBL.Interfaces.Repositories;
 using CNWTTBL.Interfaces.Services;
 using System;
 using System.Collections.Generic;
@@ -11,10 +10,10 @@ namespace CNWTTBL.Services
 {
     public class LikeService 
     {
-        ILikeRepo _likeRepo;
-        public LikeService(ILikeRepo likeRepo) 
-        {
-            _likeRepo = likeRepo;
-        }
+        //ILikeRepo _likeRepo;
+        //public LikeService(ILikeRepo likeRepo) 
+        //{
+        //    _likeRepo = likeRepo;
+        //}
     }
 }
