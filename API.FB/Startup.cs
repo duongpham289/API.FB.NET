@@ -7,16 +7,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using API.FB.Core.Interfaces.Repository;
 using API.FB.Core.Interfaces.Services;
 using API.FB.Core.Services;
+using API.FB.Infrastructure.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CNWTTBL.Interfaces.Services;
-using CNWTTBL.Services;
-using CNWTTDL.Repository;
-using API.FB.Core.Interfaces.Repository;
 
 namespace Web07.FinalTest.MF960
 {
@@ -57,17 +55,15 @@ namespace Web07.FinalTest.MF960
             });
 
 
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IAuthRepo, AuthRepo>();
+            //Services DI:
+            services.AddScoped<IUserService, UserService>();
 
-            services.AddScoped<ICommentService, CommentService>();
-            services.AddScoped<ICommentRepo, CommentRepo>();
+            //Repository DI:
+            services.AddScoped<IUserRepository, UserRepository>();
 
-            services.AddScoped<IPostService, PostService>();
-            services.AddScoped<IPostRepo, PostRepo>();
-
-            services.AddScoped<IReportService, ReportService>();
-
+            //Base DI:
+            services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
+            services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
