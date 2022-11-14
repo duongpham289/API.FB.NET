@@ -13,11 +13,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CNWTTBL.Interfaces.Services;
-using CNWTTBL.Services;
-using CNWTTDL.Repository;
+using API.FB.Core.Interfaces.Services;
+using API.FB.Core.Services;
+using API.FB.Infrastructure.Repository;
 using API.FB.Core.Interfaces.Repository;
-
 namespace Web07.FinalTest.MF960
 {
     public class Startup
@@ -60,13 +59,27 @@ namespace Web07.FinalTest.MF960
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IAuthRepo, AuthRepo>();
 
+
+
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IAuthRepo, AuthRepo>();
+
             services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<ICommentRepo, CommentRepo>();
 
             services.AddScoped<IPostService, PostService>();
             services.AddScoped<IPostRepo, PostRepo>();
 
-            services.AddScoped<IReportService, ReportService>();
+
+            services.AddScoped(typeof(IBaseRepo<>), typeof(BaseRepo<>));
+            services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
+
+
+            services.AddScoped<ICommentService, CommentService>();
+            services.AddScoped<ICommentRepo, CommentRepo>();
+
+            services.AddScoped<IPostService, PostService>();
+            services.AddScoped<IPostRepo, PostRepo>();
 
         }
 

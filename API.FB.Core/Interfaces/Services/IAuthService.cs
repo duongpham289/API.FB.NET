@@ -1,14 +1,16 @@
-﻿using CNWTTBL.Entities;
-using CNWTTBL.Services;
+﻿using API.FB.Core.Entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CNWTTBL.Interfaces.Services
+namespace API.FB.Core.Interfaces.Services
 {
     public interface IAuthService
     {
+
+        /// <summary>
+        /// Xử lí nghiệp vụ chung khi thêm mới đối tượng
+        /// </summary>
+        /// <param name="entity"> Đối tượng thêm mới </param>
+        /// <returns> Số lượng bản ghi </returns>
+        ServiceResult InsertService(User entity);
     }
 }

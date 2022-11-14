@@ -1,11 +1,11 @@
-﻿using CNWTTBL.Entities;
+﻿using API.FB.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CNWTTBL.Interfaces.Services
+namespace API.FB.Core.Interfaces.Services
 {
     public interface ICommentService 
     {

@@ -33,6 +33,19 @@ namespace API.FB.Core.Entities
         /// </summary>
         /// CreatedBY: PHDUONG
         public string Message { get; set; }
+
+
+        public ServiceResult OnException(Exception ex)
+        {
+            if (ex != null)
+            {
+                this.ResponseCode = 9999;
+                this.Message = "Lỗi Exception " + ex.Message + Environment.NewLine + ex.InnerException.Message;
+
+            }
+
+            return this;
+        }
         #endregion
     }
 }

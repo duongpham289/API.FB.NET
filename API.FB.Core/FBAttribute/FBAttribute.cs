@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace API.FB.Core.MISAAttribute
+namespace API.FB.Core.FBAttribute
 {
 
     [AttributeUsage(AttributeTargets.Property)]
@@ -32,5 +32,30 @@ namespace API.FB.Core.MISAAttribute
         {
             this.Name = name;
         }
+    }
+
+
+    /// <summary>
+    /// Cờ Khóa chính
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Method)]
+    public class PrimaryKey : Attribute
+    {
+    }
+
+    /// <summary>
+    /// Cờ ngày tạo
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Method)]
+    public class CreateDate : Attribute
+    {
+    }
+
+    /// <summary>
+    /// Cờ ngày sửa
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Method)]
+    public class ModifiedDate : Attribute
+    {
     }
 }

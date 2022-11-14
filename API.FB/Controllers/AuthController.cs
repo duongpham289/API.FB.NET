@@ -1,18 +1,22 @@
 ﻿using API.FB.Core.Entities;
 using API.FB.Core.Interfaces.Repository;
-using CNWTTBL.Entities;
-using CNWTTBL.Interfaces.Services;
+using API.FB.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 //using Microsoft.IdentityModel.Tokens;
 //using MISA.Core.Exceptions;
 //using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -34,17 +38,18 @@ namespace Api.fb.Controllers
         }
 
         [HttpPost("signup")]
-        public IActionResult Post([FromBody] User entity)
+        public ServiceResult Post([FromBody] User entity)
         {
+            ServiceResult result = new ServiceResult();
             try
             {
-                var res = _authService.InsertService(entity);
-                return StatusCode(201, res);
+                result.Data = _authService.InsertService(entity);
             }
             catch (Exception ex)
             {
-                return HandleException(ex);
+                result.OnException(ex);
             }
+            return result;
         }
 
         /// <summary>
@@ -54,20 +59,23 @@ namespace Api.fb.Controllers
         /// <returns></returns>
         //POST api/<AuthController>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] Auth auth)
+        public async Task<ServiceResult> Login([FromBody] Auth auth)
         {
+            ServiceResult result = new ServiceResult();
             try
             {
                 var user = AuthenticateUser(auth);
 
                 if (user == null)
                 {
-                    return BadRequest();
+                    result.ResponseCode = 9995;
+                    result.Message = "Không có người dùng này";
+                    return result;
                 }
 
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, user.Email),
+                    new Claim(ClaimTypes.Name, user.PhoneNumber),
                     new Claim(ClaimTypes.Role, "Manager"),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
@@ -78,12 +86,13 @@ namespace Api.fb.Controllers
 
                 var refreshToken = this.GenerateRefreshToken();
 
-                return Ok(new { user, Token = tokenString, TokenBearer = tokenBearerString, RefreshToken = refreshToken });
+                result.Data = new { user.UserID, user.FullName, Token = tokenBearerString, user.Avatar };
             }
             catch (Exception ex)
             {
-                return HandleException(ex);
+                result.OnException(ex);
             }
+            return result;
         }
 
         /// <summary>
@@ -154,20 +163,6 @@ namespace Api.fb.Controllers
             {
                 return null;
             }
-        }
-        protected IActionResult HandleException(Exception ex)
-        {
-            var res = new
-            {
-                devMsg = ex.Message,
-                userMsg = "Có lỗi xấy ra vui lòng liên hệ  để được hỗ trợ",
-                errorCode = "001",
-                data = ex.Data
-            };
-            if (ex is HUSTValidateException)
-                return StatusCode(200, res);
-            else
-                return StatusCode(500, res); //Lỗi từ server trả về 500
         }
     }
 }
