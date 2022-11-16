@@ -25,13 +25,15 @@ namespace API.FB.Infrastructure.Repository
         /// <param name="user"></param>
         /// <returns></returns>
         /// lttuan1
-        public User CheckSignupLegal(User user)
+        public bool CheckSignupLegal(User user)
         {
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add($"@phonenumber", user.PhoneNumber);
-            parameters.Add($"@password", user.Password);
-            var res = _sqlConnection.QueryFirstOrDefault($"Proc_Getuser", param: parameters, commandType: CommandType.StoredProcedure);
-            return res;
+            parameters.Add($"@v_phoneNumber", user.PhoneNumber);
+            parameters.Add("@v_isIllegal", dbType: DbType.Boolean, direction: ParameterDirection.Output);
+            _sqlConnection.QueryFirstOrDefault($"Proc_CheckSignupLegal", param: parameters, commandType: CommandType.StoredProcedure);
+
+            var isIllegal = parameters.Get<Boolean>("@v_isIllegal");
+            return isIllegal;
         }
 
         /// <summary>
@@ -40,16 +42,14 @@ namespace API.FB.Infrastructure.Repository
         /// <param name="login"></param>
         /// <returns></returns>
         /// lttuan
-        public User getUserByEmail(Auth login)
+        public User getUserByPhoneNumber(Auth login)
         {
-            var email = login.Email;
-            var password = login.PassWord;
-            var sqlQuerry = $"SELECT * FROM user WHERE Email = @email AND Password = @password";
             var parameters = new DynamicParameters();
-            parameters.Add("email", email);
-            parameters.Add("password", password);
-            var res = _sqlConnection.QueryFirstOrDefault<User>(sqlQuerry, param: parameters);
-            return res;
+            parameters.Add("v_phoneNumber", login.PhoneNumber);
+            parameters.Add("v_password", login.Password);
+            var user = _sqlConnection.QueryFirstOrDefault<User>($"Proc_CheckLoginInfo", param: parameters, commandType: CommandType.StoredProcedure);
+
+            return user;
         }
     }
 }

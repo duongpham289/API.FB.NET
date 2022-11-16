@@ -56,8 +56,8 @@ namespace Web07.FinalTest.MF960
             });
 
 
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IAuthRepo, AuthRepo>();
+            //services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
 
 

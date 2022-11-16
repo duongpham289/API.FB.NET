@@ -129,14 +129,18 @@ namespace API.FB.Infrastructure.Repository
         /// <returns></returns>
         public int Insert(User user)
         {
-            DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@Password", user.Password);
-            parameters.Add("@PhoneNumber", user.PhoneNumber);
-            parameters.Add("@Avatar", user.Avatar);
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_password", user.Password);
+                parameters.Add("@v_phoneNumber", user.PhoneNumber);
+                parameters.Add("@v_username", user.FullName);
+                parameters.Add("@v_avatar", user.Avatar);
 
-            var data = _dbConnection.Execute($"Proc_InsertUser", param: parameters, commandType: CommandType.StoredProcedure);
-            
-            return data;
+                var data = _dbConnection.Execute($"Proc_InsertUser", param: parameters, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
         }
 
         /// <summary>
@@ -146,18 +150,43 @@ namespace API.FB.Infrastructure.Repository
         /// <param name="user"></param>
         /// <returns></returns>
         /// lttuan
-        public int Update(Guid id, User user)
+        public int Update(User user)
         {
-            DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@Password", user.Password);
-            parameters.Add("@PhoneNumber", user.PhoneNumber);
-            parameters.Add("@Avatar", user.Avatar);
-            parameters.Add("@Token", user.Token);
-            parameters.Add("@id", id);
-              
-            var data = _dbConnection.Execute($"Proc_UpdateUser", param: parameters, commandType: CommandType.StoredProcedure);
-            
-            return data;
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_password", user.Password);
+                parameters.Add("@v_phoneNumber", user.PhoneNumber);
+                parameters.Add("@v_avatar", user.Avatar);
+                parameters.Add("@v_token", user.Token);
+                parameters.Add("@v_userID", user.UserID);
+
+                var data = _dbConnection.Execute($"Proc_UpdateUser", param: parameters, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
+        }
+
+
+        /// <summary>
+        /// Update theo id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        /// lttuan
+        public int UpdateTokenForUser(User user)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_token", user.Token);
+                parameters.Add("@v_userID", user.UserID);
+
+                var data = _dbConnection.Execute($"Proc_UpdateTokenForUser", param: parameters, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
         }
 
         /// <summary>
@@ -167,12 +196,15 @@ namespace API.FB.Infrastructure.Repository
         /// <returns></returns>
         public User GetUserByToken(string token)
         {
-            DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@Token", token);
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_token", token);
 
-            var data = _dbConnection.QueryFirstOrDefault<User>($"Proc_GetUserByToken", param: parameters, commandType: CommandType.StoredProcedure);
+                var data = _dbConnection.QueryFirstOrDefault<User>($"Proc_GetUserByToken", param: parameters, commandType: CommandType.StoredProcedure);
 
-            return data;
+                return data;
+            }
         }
         #endregion
 

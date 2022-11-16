@@ -8,7 +8,7 @@ namespace API.FB.Core.Entities
 {
     public class Auth
     {
-        public string Email { get; set; }
-        public string PassWord { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Password { get; set; }
     }
 }

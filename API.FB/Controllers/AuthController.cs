@@ -53,20 +53,33 @@ namespace Api.fb.Controllers
             try
             {
                 // Kiểm tra đữ liệu
-                var isLegal = _authRepo.CheckSignupLegal(user);
+                var isIllegal = _authRepo.CheckSignupLegal(user);
                 //Thực hiện validate dữ liệu
-                if (isLegal != null)
+                if (isIllegal)
                 {
-                    result.ResponseCode = 9996;
-                    result.Message = "Người dùng đã tồn tại";
-                    return result;
+                    if (String.IsNullOrWhiteSpace(user.Password))
+                    {
+                        result.ResponseCode = 1002;
+                        result.Message = "Số lượng Parameter không đầy đủ";
+                        return result;
+                    }
+                    else
+                    {
+                        result.ResponseCode = 9996;
+                        result.Message = "Người dùng đã tồn tại";
+                        return result;
+
+                    }
                 }
                 else
                 {
                     // Thêm mới người dùng
                     _userRepository.Insert(user);
                     // Trả về result
-                    result.Data = user;
+                    result.Data = new
+                    {
+                        username = user.FullName,
+                    };
                     result.ResponseCode = 1000;
                     result.Message = "OK";
                     return result;
@@ -91,6 +104,13 @@ namespace Api.fb.Controllers
             ServiceResult result = new ServiceResult();
             try
             {
+                if (String.IsNullOrWhiteSpace(auth.Password) || String.IsNullOrWhiteSpace(auth.PhoneNumber))
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+
                 var user = AuthenticateUser(auth);
 
                 if (user == null)
@@ -99,6 +119,14 @@ namespace Api.fb.Controllers
                     result.Message = "Không có người dùng này";
                     return result;
                 }
+                else if (!String.IsNullOrWhiteSpace(user.Token))
+                {
+                    result.ResponseCode = 1010;
+                    result.Message = "Hành động đã được người dùng thực hiện trước đây";
+                    return result;
+
+                }
+
                 // Tạo token
                 var claims = new List<Claim>
                 {
@@ -110,7 +138,7 @@ namespace Api.fb.Controllers
                 var tokenString = this.GenerateAccessToken(claims);
                 user.Token = tokenString;
                 // Update token cho user
-                _userRepository.Update(user.UserID, user);
+                _userRepository.UpdateTokenForUser(user);
 
                 result.Data = new { user.UserID, user.FullName, Token = tokenString, user.Avatar };
                 result.Message = "OK";
@@ -175,7 +203,7 @@ namespace Api.fb.Controllers
 
                 user.Token = null;
                 // Update token cho user
-                _userRepository.Update(user.UserID, user);
+                _userRepository.UpdateTokenForUser(user);
                 result.ResponseCode = 1000;
                 result.Message = "OK";
                 return result;
@@ -193,7 +221,7 @@ namespace Api.fb.Controllers
         /// <returns> Nếu hợp lệ - Thông tin user đã đang nhập, Nếu không hợp lệ - trả về null  </returns>
         private User AuthenticateUser(Auth auth)
         {
-            User res = _authRepo.getUserByEmail(auth);
+            User res = _authRepo.getUserByPhoneNumber(auth);
             if (res != null)
             {
                 return res;

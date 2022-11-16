@@ -55,7 +55,14 @@ namespace API.FB.Core.Interfaces.Repository
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        int Update(Guid iđ, User user);
+        int Update(User user);
+
+        /// <summary>
+        /// Sửa user token
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        int UpdateTokenForUser(User user);
 
         /// <summary>
         /// Gọi user theo token
