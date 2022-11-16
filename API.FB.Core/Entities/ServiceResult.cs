@@ -14,12 +14,6 @@ namespace API.FB.Core.Entities
         /// Hợp lệ 
         /// </summary>
         /// CreatedBY: PHDUONG
-        public bool IsValid { get; set; } = true;
-
-        /// <summary>
-        /// Hợp lệ 
-        /// </summary>
-        /// CreatedBY: PHDUONG
         public int ResponseCode { get; set; }
 
         /// <summary>
@@ -33,6 +27,19 @@ namespace API.FB.Core.Entities
         /// </summary>
         /// CreatedBY: PHDUONG
         public string Message { get; set; }
+
+
+        public ServiceResult OnException(Exception ex)
+        {
+            if (ex != null)
+            {
+                this.ResponseCode = 9999;
+                this.Message = "Lỗi Exception " + ex.Message;
+
+            }
+
+            return this;
+        }
         #endregion
     }
 }
