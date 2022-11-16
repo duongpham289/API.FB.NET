@@ -29,21 +29,48 @@ namespace Api.fb.Controllers
         IConfiguration _configuration;
         IAuthRepo _authRepo;
         IAuthService _authService;
+        IUserRepository _userRepository;
 
-        public AuthController(IAuthRepo authRepo, IAuthService authService, IConfiguration configuration)
+        public AuthController(IAuthRepo authRepo, IAuthService authService, IConfiguration configuration, IUserRepository userRepository)
         {
             _authRepo = authRepo;
             _authService = authService;
             _configuration = configuration;
+            _userRepository = userRepository;
         }
 
+
+        /// <summary>
+        /// Đăng kí
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        /// lttuan1
         [HttpPost("signup")]
-        public ServiceResult Post([FromBody] User entity)
+        public ServiceResult Signup([FromQuery] User user)
         {
             ServiceResult result = new ServiceResult();
             try
             {
-                result.Data = _authService.InsertService(entity);
+                // Kiểm tra đữ liệu
+                var isLegal = _authRepo.CheckSignupLegal(user);
+                //Thực hiện validate dữ liệu
+                if (isLegal != null)
+                {
+                    result.ResponseCode = 9996;
+                    result.Message = "Người dùng đã tồn tại";
+                    return result;
+                }
+                else
+                {
+                    // Thêm mới người dùng
+                    _userRepository.Insert(user);
+                    // Trả về result
+                    result.Data = user;
+                    result.ResponseCode = 1000;
+                    result.Message = "OK";
+                    return result;
+                }
             }
             catch (Exception ex)
             {
@@ -59,7 +86,7 @@ namespace Api.fb.Controllers
         /// <returns></returns>
         //POST api/<AuthController>
         [HttpPost("login")]
-        public async Task<ServiceResult> Login([FromBody] Auth auth)
+        public async Task<ServiceResult> Login([FromQuery] Auth auth)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -72,7 +99,7 @@ namespace Api.fb.Controllers
                     result.Message = "Không có người dùng này";
                     return result;
                 }
-
+                // Tạo token
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.PhoneNumber),
@@ -81,12 +108,12 @@ namespace Api.fb.Controllers
                 };
 
                 var tokenString = this.GenerateAccessToken(claims);
+                user.Token = tokenString;
+                // Update token cho user
+                _userRepository.Update(user.UserID, user);
 
-                var tokenBearerString = "Bearer " + tokenString;
-
-                var refreshToken = this.GenerateRefreshToken();
-
-                result.Data = new { user.UserID, user.FullName, Token = tokenBearerString, user.Avatar };
+                result.Data = new { user.UserID, user.FullName, Token = tokenString, user.Avatar };
+                result.Message = "OK";
             }
             catch (Exception ex)
             {
@@ -110,7 +137,7 @@ namespace Api.fb.Controllers
                         issuer: _configuration["Url"],
                         audience: _configuration["Url"],
                         claims: claims,
-                        expires: DateTime.Now.AddMinutes(5),
+                        //expires: DateTime.Now.AddMinutes(5),
                         signingCredentials: signingCredentials
                     );
 
@@ -123,29 +150,41 @@ namespace Api.fb.Controllers
         /// RefreshToken
         /// </summary>
         /// <returns></returns>
-        private string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[32];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(randomNumber);
-                return Convert.ToBase64String(randomNumber);
-            }
-        }
+        //private string GenerateRefreshToken()
+        //{
+        //    var randomNumber = new byte[32];
+        //    using (var rng = RandomNumberGenerator.Create())
+        //    {
+        //        rng.GetBytes(randomNumber);
+        //        return Convert.ToBase64String(randomNumber);
+        //    }
+        //}
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
         [HttpGet("logout")]
-        [Authorize]
-        public async Task<IActionResult> LogOut()
+        public async Task<ServiceResult> LogOut([FromQuery] string token)
         {
-            var refreshToken = this.GenerateRefreshToken();
+            ServiceResult result = new ServiceResult();
+            try
+            {
+                // Goi user theo token
+                User user = _userRepository.GetUserByToken(token);
 
-            var refreshTokenBearer = "Bearer " + refreshToken;
-            //Redirect to home page    
-            return Ok(new { RefreshToken = refreshToken, RefreshTokenBearer = refreshTokenBearer });
+                user.Token = null;
+                // Update token cho user
+                _userRepository.Update(user.UserID, user);
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
         }
 
         /// <summary>

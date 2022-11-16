@@ -121,6 +121,59 @@ namespace API.FB.Infrastructure.Repository
                 return parameters.Get<Boolean>("@IsExist");
             }
         }
+
+        /// <summary>
+        /// Thêm mới user khi sign in 
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public int Insert(User user)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@Password", user.Password);
+            parameters.Add("@PhoneNumber", user.PhoneNumber);
+            parameters.Add("@Avatar", user.Avatar);
+
+            var data = _dbConnection.Execute($"Proc_InsertUser", param: parameters, commandType: CommandType.StoredProcedure);
+            
+            return data;
+        }
+
+        /// <summary>
+        /// Update theo id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        /// lttuan
+        public int Update(Guid id, User user)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@Password", user.Password);
+            parameters.Add("@PhoneNumber", user.PhoneNumber);
+            parameters.Add("@Avatar", user.Avatar);
+            parameters.Add("@Token", user.Token);
+            parameters.Add("@id", id);
+              
+            var data = _dbConnection.Execute($"Proc_UpdateUser", param: parameters, commandType: CommandType.StoredProcedure);
+            
+            return data;
+        }
+
+        /// <summary>
+        /// Gọi user by token khi đăng xuất
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public User GetUserByToken(string token)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@Token", token);
+
+            var data = _dbConnection.QueryFirstOrDefault<User>($"Proc_GetUserByToken", param: parameters, commandType: CommandType.StoredProcedure);
+
+            return data;
+        }
         #endregion
 
     }
