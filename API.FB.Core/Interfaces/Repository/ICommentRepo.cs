@@ -1,10 +1,10 @@
-﻿using CNWTTBL.Entities;
+﻿using API.FB.Core.Entities;
 using System;
 using System.Collections.Generic;
 
 namespace API.FB.Core.Interfaces.Repository
 {
-    public interface ICommentRepo : IBaseRepository<Comment>
+    public interface ICommentRepo : IBaseRepo<Comment>
     {
         /// <summary>
         /// Hàm gọi theo postID

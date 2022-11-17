@@ -1,6 +1,6 @@
 ﻿using API.FB.Core.Interfaces.Repository;
-using CNWTTBL.Entities;
-using CNWTTBL.Interfaces.Services;
+using API.FB.Core.Entities;
+using API.FB.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
@@ -141,6 +141,42 @@ namespace CNWTT.Controllers
         {
             var res = _postService.Like(postID);
             return StatusCode(200, res);
+
+        }
+
+
+        [HttpPost("react")]
+        public IActionResult LikeStatusChanged(Guid userID, [FromQuery] Guid postID, int status)
+        {
+            var res = 0;
+
+            //Like like = new Like()
+            //{
+            //    PostID = postID,
+            //    UserID = userID,
+            //};
+
+            // unlike
+            //if (status == 0)
+            //{
+            //    res = _likeRepo.DeleteCustom(userID, postID);
+            //}
+            //else
+            //{
+            //    res = _likeService.InsertService(like);
+            //}
+
+            return Ok(res);
+
+        }
+
+
+        [HttpGet("report")]
+        public IActionResult ReportPost([FromQuery] Guid postId)
+        {
+
+            var res = _postService.ReportPost(postId);
+            return Ok(res);
 
         }
     }

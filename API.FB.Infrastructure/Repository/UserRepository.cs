@@ -121,6 +121,91 @@ namespace API.FB.Infrastructure.Repository
                 return parameters.Get<Boolean>("@IsExist");
             }
         }
+
+        /// <summary>
+        /// Thêm mới user khi sign in 
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public int Insert(User user)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_password", user.Password);
+                parameters.Add("@v_phoneNumber", user.PhoneNumber);
+                parameters.Add("@v_username", user.FullName);
+                parameters.Add("@v_avatar", user.Avatar);
+
+                var data = _dbConnection.Execute($"Proc_InsertUser", param: parameters, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
+        }
+
+        /// <summary>
+        /// Update theo id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        /// lttuan
+        public int Update(User user)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_password", user.Password);
+                parameters.Add("@v_phoneNumber", user.PhoneNumber);
+                parameters.Add("@v_avatar", user.Avatar);
+                parameters.Add("@v_token", user.Token);
+                parameters.Add("@v_userID", user.UserID);
+
+                var data = _dbConnection.Execute($"Proc_UpdateUser", param: parameters, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
+        }
+
+
+        /// <summary>
+        /// Update theo id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        /// lttuan
+        public int UpdateTokenForUser(User user)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_token", user.Token);
+                parameters.Add("@v_userID", user.UserID);
+
+                var data = _dbConnection.Execute($"Proc_UpdateTokenForUser", param: parameters, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
+        }
+
+        /// <summary>
+        /// Gọi user by token khi đăng xuất
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public User GetUserByToken(string token)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_token", token);
+
+                var data = _dbConnection.QueryFirstOrDefault<User>($"Proc_GetUserByToken", param: parameters, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
+        }
         #endregion
 
     }

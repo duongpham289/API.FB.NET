@@ -1,6 +1,6 @@
-﻿using CNWTTBL.Interfaces.Repositories;
-using CNWTTBL.Interfaces.Services;
-using MISA.Core.Exceptions;
+﻿using API.FB.Core.Interfaces.Repository;
+using API.FB.Core.Interfaces.Services;
+//using MISA.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CNWTTBL.Services
+namespace API.FB.Core.Services
 {
     public class BaseService<T> : IBaseService<T>
     {
@@ -40,7 +40,8 @@ namespace CNWTTBL.Services
             }
             else
             {
-                throw new HUSTValidateException("Dữ liệu đầu vào không hợp lệ", isValid);
+                //throw new HUSTValidateException("Dữ liệu đầu vào không hợp lệ", isValid);
+                return 1;
             }
 
         }
@@ -62,7 +63,9 @@ namespace CNWTTBL.Services
             }
             else
             {
-                throw new HUSTValidateException("Dữ liệu đầu vào không hợp lệ", isValid);
+                //throw new HUSTValidateException("Dữ liệu đầu vào không hợp lệ", isValid);
+                return 1;
+
             }
         }
 

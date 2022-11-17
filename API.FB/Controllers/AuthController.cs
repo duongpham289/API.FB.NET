@@ -1,18 +1,22 @@
 ﻿using API.FB.Core.Entities;
 using API.FB.Core.Interfaces.Repository;
-using CNWTTBL.Entities;
-using CNWTTBL.Interfaces.Services;
+using API.FB.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 //using Microsoft.IdentityModel.Tokens;
 //using MISA.Core.Exceptions;
 //using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -25,26 +29,67 @@ namespace Api.fb.Controllers
         IConfiguration _configuration;
         IAuthRepo _authRepo;
         IAuthService _authService;
+        IUserRepository _userRepository;
 
-        public AuthController(IAuthRepo authRepo, IAuthService authService, IConfiguration configuration)
+        public AuthController(IAuthRepo authRepo, IAuthService authService, IConfiguration configuration, IUserRepository userRepository)
         {
             _authRepo = authRepo;
             _authService = authService;
             _configuration = configuration;
+            _userRepository = userRepository;
         }
 
+
+        /// <summary>
+        /// Đăng kí
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        /// lttuan1
         [HttpPost("signup")]
-        public IActionResult Post([FromBody] User entity)
+        public ServiceResult Signup([FromQuery] User user)
         {
+            ServiceResult result = new ServiceResult();
             try
             {
-                var res = _authService.InsertService(entity);
-                return StatusCode(201, res);
+                // Kiểm tra đữ liệu
+                var isIllegal = _authRepo.CheckSignupLegal(user);
+                //Thực hiện validate dữ liệu
+                if (isIllegal)
+                {
+                    if (String.IsNullOrWhiteSpace(user.Password))
+                    {
+                        result.ResponseCode = 1002;
+                        result.Message = "Số lượng Parameter không đầy đủ";
+                        return result;
+                    }
+                    else
+                    {
+                        result.ResponseCode = 9996;
+                        result.Message = "Người dùng đã tồn tại";
+                        return result;
+
+                    }
+                }
+                else
+                {
+                    // Thêm mới người dùng
+                    _userRepository.Insert(user);
+                    // Trả về result
+                    result.Data = new
+                    {
+                        username = user.FullName,
+                    };
+                    result.ResponseCode = 1000;
+                    result.Message = "OK";
+                    return result;
+                }
             }
             catch (Exception ex)
             {
-                return HandleException(ex);
+                result.OnException(ex);
             }
+            return result;
         }
 
         /// <summary>
@@ -54,36 +99,55 @@ namespace Api.fb.Controllers
         /// <returns></returns>
         //POST api/<AuthController>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] Auth auth)
+        public async Task<ServiceResult> Login([FromQuery] Auth auth)
         {
+            ServiceResult result = new ServiceResult();
             try
             {
+                if (String.IsNullOrWhiteSpace(auth.Password) || String.IsNullOrWhiteSpace(auth.PhoneNumber))
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+
                 var user = AuthenticateUser(auth);
 
                 if (user == null)
                 {
-                    return BadRequest();
+                    result.ResponseCode = 9995;
+                    result.Message = "Không có người dùng này";
+                    return result;
+                }
+                else if (!String.IsNullOrWhiteSpace(user.Token))
+                {
+                    result.ResponseCode = 1010;
+                    result.Message = "Hành động đã được người dùng thực hiện trước đây";
+                    return result;
+
                 }
 
+                // Tạo token
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, user.Email),
+                    new Claim(ClaimTypes.Name, user.PhoneNumber),
                     new Claim(ClaimTypes.Role, "Manager"),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
 
                 var tokenString = this.GenerateAccessToken(claims);
+                user.Token = tokenString;
+                // Update token cho user
+                _userRepository.UpdateTokenForUser(user);
 
-                var tokenBearerString = "Bearer " + tokenString;
-
-                var refreshToken = this.GenerateRefreshToken();
-
-                return Ok(new { user, Token = tokenString, TokenBearer = tokenBearerString, RefreshToken = refreshToken });
+                result.Data = new { user.UserID, user.FullName, Token = tokenString, user.Avatar };
+                result.Message = "OK";
             }
             catch (Exception ex)
             {
-                return HandleException(ex);
+                result.OnException(ex);
             }
+            return result;
         }
 
         /// <summary>
@@ -101,7 +165,7 @@ namespace Api.fb.Controllers
                         issuer: _configuration["Url"],
                         audience: _configuration["Url"],
                         claims: claims,
-                        expires: DateTime.Now.AddMinutes(5),
+                        //expires: DateTime.Now.AddMinutes(5),
                         signingCredentials: signingCredentials
                     );
 
@@ -114,29 +178,41 @@ namespace Api.fb.Controllers
         /// RefreshToken
         /// </summary>
         /// <returns></returns>
-        private string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[32];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(randomNumber);
-                return Convert.ToBase64String(randomNumber);
-            }
-        }
+        //private string GenerateRefreshToken()
+        //{
+        //    var randomNumber = new byte[32];
+        //    using (var rng = RandomNumberGenerator.Create())
+        //    {
+        //        rng.GetBytes(randomNumber);
+        //        return Convert.ToBase64String(randomNumber);
+        //    }
+        //}
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
         [HttpGet("logout")]
-        [Authorize]
-        public async Task<IActionResult> LogOut()
+        public async Task<ServiceResult> LogOut([FromQuery] string token)
         {
-            var refreshToken = this.GenerateRefreshToken();
+            ServiceResult result = new ServiceResult();
+            try
+            {
+                // Goi user theo token
+                User user = _userRepository.GetUserByToken(token);
 
-            var refreshTokenBearer = "Bearer " + refreshToken;
-            //Redirect to home page    
-            return Ok(new { RefreshToken = refreshToken, RefreshTokenBearer = refreshTokenBearer });
+                user.Token = null;
+                // Update token cho user
+                _userRepository.UpdateTokenForUser(user);
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
         }
 
         /// <summary>
@@ -145,7 +221,7 @@ namespace Api.fb.Controllers
         /// <returns> Nếu hợp lệ - Thông tin user đã đang nhập, Nếu không hợp lệ - trả về null  </returns>
         private User AuthenticateUser(Auth auth)
         {
-            User res = _authRepo.getUserByEmail(auth);
+            User res = _authRepo.getUserByPhoneNumber(auth);
             if (res != null)
             {
                 return res;
@@ -154,20 +230,6 @@ namespace Api.fb.Controllers
             {
                 return null;
             }
-        }
-        protected IActionResult HandleException(Exception ex)
-        {
-            var res = new
-            {
-                devMsg = ex.Message,
-                userMsg = "Có lỗi xấy ra vui lòng liên hệ  để được hỗ trợ",
-                errorCode = "001",
-                data = ex.Data
-            };
-            if (ex is HUSTValidateException)
-                return StatusCode(200, res);
-            else
-                return StatusCode(500, res); //Lỗi từ server trả về 500
         }
     }
 }

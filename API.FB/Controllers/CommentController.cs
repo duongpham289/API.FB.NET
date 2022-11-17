@@ -1,12 +1,11 @@
 ﻿using API.FB.Core.Interfaces.Repository;
-using CNWTTBL.Entities;
-using CNWTTBL.Interfaces.Services;
+using API.FB.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace CNWTT.Controllers
+namespace API.FB.Core.Controllers
 {
     [Route("fb")]
     [ApiController]

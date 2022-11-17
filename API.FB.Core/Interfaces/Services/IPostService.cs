@@ -1,11 +1,11 @@
-﻿using CNWTTBL.Entities;
+﻿using API.FB.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CNWTTBL.Interfaces.Services
+namespace API.FB.Core.Interfaces.Services
 {
     public interface IPostService 
     {
@@ -14,6 +14,8 @@ namespace CNWTTBL.Interfaces.Services
         public int UpdatePost(Guid postId ,Post post);
 
         public int DeletePost(Guid postId);
+
+        public bool ReportPost(Guid postId);
 
         public List<Post> GetPostList();
         public int Like(Guid postId);

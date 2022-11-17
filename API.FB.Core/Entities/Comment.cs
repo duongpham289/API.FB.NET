@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CNWTTBL.Entities
+namespace API.FB.Core.Entities
 {
     public class Comment 
     {
@@ -12,6 +12,9 @@ namespace CNWTTBL.Entities
 
         public Guid PostID { get; set; }
 
+        public Guid UserID { get; set; }
+
+        public string? FullName { get; set; }
         public string? CommentContent { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿using CNWTTBL.Entities;
+﻿using API.FB.Core.Entities;
 using System;
 using System.Collections.Generic;
 
