@@ -6,14 +6,11 @@ using System.Threading.Tasks;
 
 namespace API.FB.Core.Entities
 {
-    public class Comment 
+    public class React
     {
-        public Guid CommentID { get; set; }
-
-        public Guid PostID { get; set; }
-
+        public Guid ReactID { get; set; }
         public Guid UserID { get; set; }
-
-        public string? CommentContent { get; set; }
+        public Guid PostId { get; set; }
+        public int? Status { get; set; }
     }
 }

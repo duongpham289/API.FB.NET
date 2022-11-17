@@ -12,5 +12,6 @@ namespace API.FB.Core.Interfaces.Repository
         /// <param name="postId"></param>
         /// <returns></returns>
         List<Comment> GetByPostId(Guid postId);
+        int EditComment(Comment comment);
     }
 }

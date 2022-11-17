@@ -19,5 +19,14 @@ namespace API.FB.Core.Interfaces.Repository
         /// <returns></returns>
         /// CreatedBy: PHDUONG
         List<Post> GetNewListPost(Guid userID, int newestPostID);
+
+        int DeletePost(Guid postID);
+
+        int UpdatePost(Post post);
+        int InsertPost(Post post);
+        int ReportPost(Report report);
+
+        int ReactPost(React react);
+
     }
 }

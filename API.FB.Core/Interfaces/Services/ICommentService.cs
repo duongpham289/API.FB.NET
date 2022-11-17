@@ -9,6 +9,6 @@ namespace API.FB.Core.Interfaces.Services
 {
     public interface ICommentService 
     {
-        public int editComment(Guid postId);
+        public int editComment(Comment comment);
     }
 }
