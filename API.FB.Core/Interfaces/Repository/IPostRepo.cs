@@ -12,13 +12,13 @@ namespace API.FB.Core.Interfaces.Repository
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: PHDUONG
-        List<Post> GetListPost(Guid userID);
+        List<PostCustom> GetListPost(string token, Guid userID, Guid lastedPostID, int skip, int take);
         /// <summary>
         /// Lấy tất cả Post
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: PHDUONG
-        List<Post> GetNewListPost(Guid userID, int newestPostID);
+        List<PostCustom> GetNewListPost(string token, Guid lastedPostID);
 
         int DeletePost(Guid postID);
 
@@ -26,7 +26,7 @@ namespace API.FB.Core.Interfaces.Repository
         int InsertPost(Post post);
         int ReportPost(Report report);
 
-        int ReactPost(React react);
+        int LikePost(string token, Guid postID);
 
     }
 }

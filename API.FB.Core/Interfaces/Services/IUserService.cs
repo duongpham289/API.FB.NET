@@ -18,6 +18,6 @@ namespace API.FB.Core.Interfaces.Services
         /// <param name="check">Check export hay paging</param>
         /// <returns></returns>
         /// CreatedBy: PHDUONG
-        dynamic ExportUser(int pageIndex, int pageSize, string userFilter, bool check);
+        //dynamic ExportUser(int pageIndex, int pageSize, string userFilter, bool check);
     }
 }

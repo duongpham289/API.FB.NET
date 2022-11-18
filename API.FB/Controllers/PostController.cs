@@ -15,7 +15,7 @@ namespace CNWTT.Controllers
         IPostService _postService;
         IPostRepo _postRepo;
 
-        public PostController(IPostService postService, IPostRepo postRepo) 
+        public PostController(IPostService postService, IPostRepo postRepo)
         {
             _postService = postService;
             _postRepo = postRepo;
@@ -26,35 +26,30 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <returns></returns>
         ///  CreatedBy: PHDUONG(27/08/2021)
-        [HttpGet("getListPost")]
-        public virtual IActionResult GetListPost([FromQuery]Guid userID)
+        [HttpGet("get_list_post")]
+        public virtual ServiceResult GetListPost([FromQuery] string token, Guid userID, Guid lastedPostID, int skip, int take)
         {
+            ServiceResult result = new ServiceResult();
             try
             {
-                var entityCode = _postRepo.GetListPost(userID);
-
-                if (entityCode != null)
+                if (String.IsNullOrWhiteSpace(token) || userID == Guid.Empty)
                 {
-                    return StatusCode(200, entityCode);
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+                var list = _postRepo.GetListPost(token, userID, lastedPostID, skip, take);
 
-                }
-                else
-                {
-                    return NoContent();
-                }
+                result.ResponseCode = 1000;
+                result.Data = list;
+                result.Message = "OK";
             }
             catch (Exception ex)
             {
-                var errorObj = new
-                {
-                    devMsg = ex.Message,
-                    userMsg = "Có lỗi xấy ra vui lòng liên hệ  để được hỗ trợ",
-                    errorCode = "misa-001",
-                    moreInfo = "https://openapi.misa.com.vn/errorcode/misa-001",
-                    traceId = ""
-                };
-                return StatusCode(500, errorObj);
+                result.OnException(ex);
             }
+            return result;
+
         }
 
         /// <summary>
@@ -62,35 +57,29 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <returns></returns>
         ///  CreatedBy: PHDUONG(27/08/2021)
-        [HttpGet("getNewPost")]
-        public  IActionResult GetNewListPost([FromQuery] Guid userID, [FromQuery]int newestPostID)
+        [HttpGet("get_new_post")]
+        public ServiceResult GetNewListPost([FromQuery] string token, Guid lastedPostID)
         {
+            ServiceResult result = new ServiceResult();
             try
             {
-                var entityCode = _postRepo.GetNewListPost(userID, newestPostID);
-
-                if (entityCode != null)
+                if (String.IsNullOrWhiteSpace(token) || lastedPostID == Guid.Empty)
                 {
-                    return StatusCode(200, entityCode);
-
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
                 }
-                else
-                {
-                    return NoContent();
-                }
+                var list = _postRepo.GetNewListPost(token, lastedPostID);
+                result.ResponseCode = 1000;
+                result.Data = list;
+                result.Message = "OK";
             }
             catch (Exception ex)
             {
-                var errorObj = new
-                {
-                    devMsg = ex.Message,
-                    userMsg = "Có lỗi xấy ra vui lòng liên hệ  để được hỗ trợ",
-                    errorCode = "misa-001",
-                    moreInfo = "https://openapi.misa.com.vn/errorcode/misa-001",
-                    traceId = ""
-                };
-                return StatusCode(500, errorObj);
+                result.OnException(ex);
             }
+            return result;
+
         }
         /// <summary>
         /// Xử lí thêm mới dữ liệu
@@ -187,7 +176,7 @@ namespace CNWTT.Controllers
             try
             {
                 var serviceResult = _postRepo.DeletePost(postID);
-                
+
                 result.ResponseCode = 1000;
                 result.Message = "OK";
                 return result;
@@ -201,27 +190,24 @@ namespace CNWTT.Controllers
 
         }
 
-
-        [HttpPost("react")]
-        public ServiceResult LikeStatusChanged([FromQuery] React react)
+        /// <summary>
+        /// Controller like
+        /// </summary>
+        /// <param name="react"></param>
+        /// <returns></returns>
+        [HttpPost("like")]
+        public ServiceResult LikeStatusChanged([FromQuery] string token, Guid postID)
         {
             ServiceResult result = new ServiceResult();
             try
             {
-                if (react.UserID == Guid.Empty || react.PostId == Guid.Empty )
+                if (String.IsNullOrWhiteSpace(token) || postID == Guid.Empty)
                 {
                     result.ResponseCode = 1002;
                     result.Message = "Số lượng Parameter không đầy đủ";
                     return result;
                 }
-
-                if (react.Status == null)
-                {
-                    react.Status = 0;
-                }
-                react.ReactID = Guid.NewGuid();
-                _postService.Like(react);
-
+                var res = _postRepo.LikePost(token, postID);
                 result.ResponseCode = 1000;
                 result.Message = "OK";
                 return result;

@@ -28,7 +28,7 @@ namespace API.FB.Core.Services
 
 
         public List<Post> GetPostList() { return new List<Post>(); }
-        public int Like(React react) { return _postRepo.ReactPost(react); }
+        //public int Like(React react) { return _postRepo.ReactPost(react); }
 
 
         public int ReportPost(Report report)
