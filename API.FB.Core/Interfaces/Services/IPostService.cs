@@ -11,13 +11,12 @@ namespace API.FB.Core.Interfaces.Services
     {
         public int InsertPost(Post post);
 
-        public int UpdatePost(Guid postId ,Post post);
+        public int UpdatePost(Post post);
 
-        public int DeletePost(Guid postId);
 
-        public bool ReportPost(Guid postId);
+        public int ReportPost(Report report);
 
         public List<Post> GetPostList();
-        public int Like(Guid postId);
+        public int Like(React react);
     }
 }

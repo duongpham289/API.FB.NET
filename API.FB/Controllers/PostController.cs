@@ -3,6 +3,7 @@ using API.FB.Core.Entities;
 using API.FB.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading.Tasks;
 
 namespace CNWTT.Controllers
 {
@@ -98,12 +99,38 @@ namespace CNWTT.Controllers
         /// <returns></returns>
         // POST api/<MISABaseController>
         [HttpPost("post")]
-        public IActionResult Post([FromBody] Post entity)
+        public ServiceResult Post([FromQuery] Post post)
         {
-            
-                var res = _postService.InsertPost(entity);
-                return StatusCode(201, res);
-            
+
+            ServiceResult result = new ServiceResult();
+            try
+            {
+                if (String.IsNullOrWhiteSpace(post.Content) || post.UserID == Guid.Empty)
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+
+                if (post.Content.Length > 65.535 || post.Media.Length > 65.535)
+                {
+                    result.ResponseCode = 1006;
+                    result.Message = "Độ dài đầu vào quá mức cho phép";
+                    return result;
+                }
+                post.PostID = Guid.NewGuid();
+                _postService.UpdatePost(post);
+
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
+
         }
 
         /// <summary>
@@ -114,12 +141,37 @@ namespace CNWTT.Controllers
         /// <returns></returns>
         // PUT api/<MISABaseController>/5
         [HttpPut("edit_post")]
-        public virtual IActionResult Put([FromQuery] Guid entityId, [FromBody] Post entity)
+        public ServiceResult Put([FromQuery] Post post)
         {
-            
-                var res = _postService.UpdatePost(entityId, entity);
-                return StatusCode(200, res);
-            
+            ServiceResult result = new ServiceResult();
+            try
+            {
+                if (String.IsNullOrWhiteSpace(post.Content) || post.UserID == Guid.Empty || post.PostID == Guid.Empty)
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+
+                if (post.Content.Length > 65.535 || post.Media.Length > 65.535)
+                {
+                    result.ResponseCode = 1006;
+                    result.Message = "Độ dài đầu vào quá mức cho phép";
+                    return result;
+                }
+                var postID = post.PostID;
+                _postService.UpdatePost(post);
+
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
+
         }
 
         /// <summary>
@@ -128,55 +180,92 @@ namespace CNWTT.Controllers
         /// <param name="entityId"> Id của đối tượng </param>
         /// <returns></returns>
         [HttpDelete("delete_post")]
-        public virtual IActionResult Delete([FromQuery] Guid entityId)
+        public ServiceResult Delete([FromQuery] Guid postID)
         {
-            
-                var res = _postService.DeletePost(entityId);
-                return StatusCode(200, res);
-            
-        }
+            ServiceResult result = new ServiceResult();
 
-        [HttpGet("like")]
-        public IActionResult Like(Guid postID)
-        {
-            var res = _postService.Like(postID);
-            return StatusCode(200, res);
+            try
+            {
+                var serviceResult = _postRepo.DeletePost(postID);
+                
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+
+            }
+            return result;
 
         }
 
 
         [HttpPost("react")]
-        public IActionResult LikeStatusChanged(Guid userID, [FromQuery] Guid postID, int status)
+        public ServiceResult LikeStatusChanged([FromQuery] React react)
         {
-            var res = 0;
+            ServiceResult result = new ServiceResult();
+            try
+            {
+                if (react.UserID == Guid.Empty || react.PostId == Guid.Empty )
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
 
-            //Like like = new Like()
-            //{
-            //    PostID = postID,
-            //    UserID = userID,
-            //};
+                if (react.Status == null)
+                {
+                    react.Status = 0;
+                }
+                react.ReactID = Guid.NewGuid();
+                _postService.Like(react);
 
-            // unlike
-            //if (status == 0)
-            //{
-            //    res = _likeRepo.DeleteCustom(userID, postID);
-            //}
-            //else
-            //{
-            //    res = _likeService.InsertService(like);
-            //}
-
-            return Ok(res);
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
 
         }
 
 
         [HttpGet("report")]
-        public IActionResult ReportPost([FromQuery] Guid postId)
+        public ServiceResult ReportPost([FromQuery] Report report)
         {
+            ServiceResult result = new ServiceResult();
+            try
+            {
+                if (String.IsNullOrWhiteSpace(report.Details) || report.UserID == Guid.Empty || report.PostID == Guid.Empty)
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
 
-            var res = _postService.ReportPost(postId);
-            return Ok(res);
+                if (report.Subject.Length > 255 || report.Details.Length > 65.535)
+                {
+                    result.ResponseCode = 1006;
+                    result.Message = "Độ dài đầu vào quá mức cho phép";
+                    return result;
+                }
+                report.ReportID = Guid.NewGuid();
+                _postService.ReportPost(report);
+
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
 
         }
     }

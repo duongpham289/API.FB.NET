@@ -7,11 +7,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MySqlConnector;
+using System.Data;
 
 namespace API.FB.Infrastructure.Repository
 {
     public class CommentRepo : BaseRepo<Comment>, ICommentRepo
     {
+        protected IConfiguration _configuration;
+        protected IDbConnection _dbConnection;
         public CommentRepo(IConfiguration configuration) : base(configuration)
         {
         }
@@ -28,6 +32,16 @@ namespace API.FB.Infrastructure.Repository
 
             // Trả về dữ liệu dạng List:
             return res.ToList();
+        }
+
+        public int EditComment(Comment comment)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                var data = _dbConnection.Execute($"Proc_UpdateComment", param: comment, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
         }
     }
 }

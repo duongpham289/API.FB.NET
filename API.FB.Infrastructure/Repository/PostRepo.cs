@@ -14,7 +14,9 @@ namespace API.FB.Infrastructure.Repository
 {
     public class PostRepo : BaseRepo<Post>, IPostRepo
     {
-
+        protected IConfiguration _configuration;
+        protected IDbConnection _dbConnection;
+        string _className;
 
         #region Constructor
         public PostRepo(IConfiguration configuration) : base(configuration)
@@ -70,6 +72,60 @@ namespace API.FB.Infrastructure.Repository
             // Thực hiện câu truy vấn: 
             var res = _sqlConnection.Execute(sqlQuery, param: parameters);
             return res;
+        }
+
+        public int UpdatePost(Post post)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                var data = _dbConnection.Execute($"Proc_UpdatePost", param: post, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
+        }
+
+        public int InsertPost(Post post)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                var data = _dbConnection.Execute($"Proc_InsertPost", param: post, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
+        }
+
+        public int DeletePost(Guid postID)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_postID", postID);
+                
+
+                var data = _dbConnection.Execute($"Proc_DeletePost", param: parameters, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
+        }
+
+        public int ReportPost(Report report)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                var data = _dbConnection.Execute($"Proc_ReportPost", param: report, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
+        }
+
+        public int ReactPost(React react)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                var data = _dbConnection.Execute($"Proc_ReactPost", param: react, commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
         }
 
     }
