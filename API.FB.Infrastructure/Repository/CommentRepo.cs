@@ -18,27 +18,44 @@ namespace API.FB.Infrastructure.Repository
         protected IDbConnection _dbConnection;
         public CommentRepo(IConfiguration configuration) : base(configuration)
         {
+            _configuration = configuration;
         }
 
-        public List<Comment> GetByPostId(Guid postId)
-        {
-            // Thực hiện khai báo câu lệnh truy vấn SQL:
-            var sqlQuery = $"SELECT * FROM comment c WHERE c.PostID = @postId";
-            var parameters = new DynamicParameters();
-            parameters.Add("@postId", postId);
-
-            // Thực hiện câu truy vấn:
-            var res = _sqlConnection.Query<Comment>(sqlQuery, param: parameters);
-
-            // Trả về dữ liệu dạng List:
-            return res.ToList();
-        }
-
-        public int EditComment(Comment comment)
+        public List<Comment> GetByPostId(Comment comment)
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
-                var data = _dbConnection.Execute($"Proc_UpdateComment", param: comment, commandType: CommandType.StoredProcedure);
+
+                var token = comment.Token;
+                var postId = comment.PostID;
+                var index = comment.Index;
+                var count = comment.Count;
+
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_postID", comment.PostID);
+                parameters.Add("@v_token", comment.Token);
+                parameters.Add("@v_index", comment.Index);
+                parameters.Add("@v_count", comment.Count);
+
+                var data = _dbConnection.Query<List<Comment>>($"Proc_GetComment", param: parameters, commandType: CommandType.StoredProcedure);
+
+                return (List<Comment>)data; // làm tạm, chưa đúng
+            }
+        }
+
+        public int InsertComment(Comment comment)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_postID", comment.PostID);
+                parameters.Add("@v_token", comment.Token);
+                parameters.Add("@v_comment", comment.CommentContent);
+                parameters.Add("@v_index", comment.Index);
+                parameters.Add("@v_count", comment.Count);
+
+                var data = _dbConnection.Execute($"Proc_InsertComment", param: comment, commandType: CommandType.StoredProcedure);
 
                 return data;
             }

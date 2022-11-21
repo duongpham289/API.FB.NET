@@ -8,9 +8,10 @@ namespace API.FB.Core.Entities
 {
     public class React
     {
-        public Guid ReactID { get; set; }
+        public int ReactID { get; set; }
         public Guid UserID { get; set; }
-        public Guid PostId { get; set; }
+        public int PostID { get; set; }
+        public string? Token { get; set; }
         public int? Status { get; set; }
     }
 }

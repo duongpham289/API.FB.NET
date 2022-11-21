@@ -22,6 +22,8 @@ namespace API.FB.Infrastructure.Repository
         public PostRepo(IConfiguration configuration) : base(configuration)
         {
 
+            _configuration = configuration;
+
         }
         #endregion
 
@@ -78,7 +80,14 @@ namespace API.FB.Infrastructure.Repository
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
-                var data = _dbConnection.Execute($"Proc_UpdatePost", param: post, commandType: CommandType.StoredProcedure);
+                var parameters = new DynamicParameters();
+                parameters.Add("@v_described", post.Described);
+                parameters.Add("@v_token", post.Token);
+                parameters.Add("@v_postID", post.PostID);
+                parameters.Add("@v_media", post.Media);
+                parameters.Add("@v_status", post.Status);
+
+                var data = _dbConnection.Execute($"Proc_UpdatePost", param: parameters, commandType: CommandType.StoredProcedure);
 
                 return data;
             }
@@ -88,19 +97,26 @@ namespace API.FB.Infrastructure.Repository
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
-                var data = _dbConnection.Execute($"Proc_InsertPost", param: post, commandType: CommandType.StoredProcedure);
+                var parameters = new DynamicParameters();
+                parameters.Add("@v_described", post.Described);
+                parameters.Add("@v_token", post.Token);
+                parameters.Add("@v_media", post.Media);
+                parameters.Add("@v_status", post.Status);
+
+                var data = _dbConnection.Execute($"Proc_InsertPost", param: parameters, commandType: CommandType.StoredProcedure);
 
                 return data;
             }
         }
 
-        public int DeletePost(Guid postID)
+        public int DeletePost(Post post)
         {
+
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
                 DynamicParameters parameters = new DynamicParameters();
-                parameters.Add("@v_postID", postID);
-                
+                parameters.Add("@v_postID", post.PostID);
+
 
                 var data = _dbConnection.Execute($"Proc_DeletePost", param: parameters, commandType: CommandType.StoredProcedure);
 
@@ -112,6 +128,12 @@ namespace API.FB.Infrastructure.Repository
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_postID", report.PostID);
+                parameters.Add("@v_token", report.Token);
+                parameters.Add("@v_subject", report.Subject);
+                parameters.Add("@v_details", report.Details);
+
                 var data = _dbConnection.Execute($"Proc_ReportPost", param: report, commandType: CommandType.StoredProcedure);
 
                 return data;
@@ -122,6 +144,10 @@ namespace API.FB.Infrastructure.Repository
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
+                var parameters = new DynamicParameters();
+                parameters.Add("@v_token", react.Token);
+                parameters.Add("@v_postID", react.PostID);
+
                 var data = _dbConnection.Execute($"Proc_ReactPost", param: react, commandType: CommandType.StoredProcedure);
 
                 return data;

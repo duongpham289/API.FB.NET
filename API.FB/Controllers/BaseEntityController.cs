@@ -116,17 +116,18 @@ namespace API.FB.Controllers
         {
             try
             {
-                var serviceReSult = _baseService.Add(entity);
+                //var serviceReSult = _baseService.Add(entity);
 
-                if (serviceReSult.IsValid == true)
-                {
-                    return StatusCode(201, serviceReSult.Data);
+                //if (serviceReSult.IsValid == true)
+                //{
+                //    return StatusCode(201, serviceReSult.Data);
 
-                }
-                else
-                {
-                    return BadRequest(serviceReSult.Data);
-                }
+                //}
+                //else
+                //{
+                //    return BadRequest(serviceReSult.Data);
+                //}
+                return StatusCode(201);
             }
             catch (Exception ex)
             {
@@ -153,16 +154,17 @@ namespace API.FB.Controllers
         {
             try
             {
-                var serviceReSult = _baseService.Update(entity, entityId);
+                //var serviceReSult = _baseService.Update(entity, entityId);
 
-                if (serviceReSult.IsValid == true)
-                {
-                    return StatusCode(200, serviceReSult.Data);
-                }
-                else
-                {
-                    return BadRequest(serviceReSult.Data);
-                }
+                //if (serviceReSult.IsValid == true)
+                //{
+                //    return StatusCode(200, serviceReSult.Data);
+                //}
+                //else
+                //{
+                //    return BadRequest(serviceReSult.Data);
+                //}
+                return StatusCode(200);
             }
             catch (Exception ex)
             {
