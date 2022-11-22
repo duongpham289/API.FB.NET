@@ -28,20 +28,6 @@ namespace API.FB.Infrastructure.Repository
         #endregion
 
         /// <summary>
-        /// Lấy dữ liệu Mã entity
-        /// </summary>
-        /// <returns></returns>
-        /// CreatedBy: PHDUONG(27/08/2021)
-        public List<Post> GetListPost(Guid userID)
-        {
-            DynamicParameters parameters = new DynamicParameters();
-            parameters.Add($"@v_userID", userID);
-            var listPost = _sqlConnection.Query<Post>($"Proc_GetListPost", param: parameters, commandType: CommandType.StoredProcedure);
-
-            return listPost.AsList();
-        }
-
-        /// <summary>
         /// Hàm trả về danh sách bài viết
         /// </summary>
         /// <param name="token"></param>
@@ -50,17 +36,16 @@ namespace API.FB.Infrastructure.Repository
         /// <param name="skip"></param>
         /// <param name="take"></param>
         /// <returns></returns>
-        public List<Post> GetListPost(string token, Guid userID, Guid lastedPostID, int skip, int take)
+        public List<Post> GetListPost(string token, Guid lastedPostID, int skip, int take)
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
                 DynamicParameters parameters = new DynamicParameters();
                 parameters.Add("@v_postID", lastedPostID);
-                parameters.Add("@v_userID", userID);
                 parameters.Add("@v_token", token);
                 parameters.Add("@v_skip", skip);
                 parameters.Add("@v_take", take);
-                var data = _dbConnection.Query<Post>($"Proc_ReactPost", param: parameters, commandType: CommandType.StoredProcedure);
+                var data = _dbConnection.Query<Post>($"Proc_GetListPost", param: parameters, commandType: CommandType.StoredProcedure);
 
                 return data.ToList();
             }
