@@ -19,6 +19,6 @@ namespace API.FB.Core.Interfaces.Services
         public int ReportPost(Report report);
 
         public List<Post> GetPostList();
-        public int React(React react);
+        //public int React(React react);
     }
 }

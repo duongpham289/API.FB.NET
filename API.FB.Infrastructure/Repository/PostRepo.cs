@@ -36,7 +36,7 @@ namespace API.FB.Infrastructure.Repository
         /// <param name="skip"></param>
         /// <param name="take"></param>
         /// <returns></returns>
-        public List<Post> GetListPost(string token, Guid lastedPostID, int skip, int take)
+        public List<Post> GetListPost(string token, int lastedPostID, int skip, int take)
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
@@ -55,7 +55,7 @@ namespace API.FB.Infrastructure.Repository
         /// Lấy dữ liệu Mã entity
         /// </summary>
         /// <returns></returns>
-        public List<Post> GetNewListPost(string token, Guid lastedPostID)
+        public List<Post> GetNewListPost(string token, int lastedPostID)
         {
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("@v_postID", lastedPostID);
@@ -164,18 +164,18 @@ namespace API.FB.Infrastructure.Repository
         /// <param name="token"></param>
         /// <param name="postID"></param>
         /// <returns></returns>
-        public int LikePost(string token, Guid postID)
-        {
-            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
-            {
-                var parameters = new DynamicParameters();
-                parameters.Add("@v_token", react.Token);
-                parameters.Add("@v_postID", react.PostID);
+        //public int LikePost(string token, Guid postID)
+        //{
+        //    using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+        //    {
+        //        var parameters = new DynamicParameters();
+        //        parameters.Add("@v_token", react.Token);
+        //        parameters.Add("@v_postID", react.PostID);
 
-                var data = _dbConnection.QueryFirstOrDefault<int>($"Proc_ReactPost", param: parameters, commandType: CommandType.StoredProcedure);
+        //        var data = _dbConnection.QueryFirstOrDefault<int>($"Proc_ReactPost", param: parameters, commandType: CommandType.StoredProcedure);
 
-                return data;
-            }
-        }
+        //        return data;
+        //    }
+        //}
     }
 }
