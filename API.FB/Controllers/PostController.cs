@@ -29,9 +29,8 @@ namespace CNWTT.Controllers
         /// Lấy tất cả Code
         /// </summary>
         /// <returns></returns>
-        ///  CreatedBy: PHDUONG(27/08/2021)
         [HttpGet("getListPost")]
-        public virtual IActionResult GetListPost([FromQuery] Guid userID, [FromQuery] string token, [FromQuery] int newestPostID, [FromQuery] int skip, [FromQuery] int skip)
+        public virtual ServiceResult GetListPost([FromQuery] Guid userID, [FromQuery] string token, [FromQuery] int newestPostID, [FromQuery] int skip, [FromQuery] int take)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -42,7 +41,7 @@ namespace CNWTT.Controllers
                     result.Message = "Số lượng Parameter không đầy đủ";
                     return result;
                 }
-                var list = _postRepo.GetListPost(token, userID, lastedPostID, skip, take);
+                var list = _postRepo.GetListPost(token, newestPostID, skip, take);
 
                 result.ResponseCode = 1000;
                 result.Data = list;
@@ -60,20 +59,19 @@ namespace CNWTT.Controllers
         /// Lấy tất cả Code
         /// </summary>
         /// <returns></returns>
-        ///  CreatedBy: PHDUONG(27/08/2021)
         [HttpGet("getNewPost")]
-        public IActionResult GetNewListPost([FromQuery] Guid userID, [FromQuery] int newestPostID)
+        public ServiceResult GetNewListPost([FromQuery] string token, [FromQuery] int newestPostID)
         {
             ServiceResult result = new ServiceResult();
             try
             {
-                if (String.IsNullOrWhiteSpace(token) || lastedPostID == Guid.Empty)
+                if (String.IsNullOrWhiteSpace(token) || String.IsNullOrWhiteSpace(newestPostID.ToString()))
                 {
                     result.ResponseCode = 1002;
                     result.Message = "Số lượng Parameter không đầy đủ";
                     return result;
                 }
-                var list = _postRepo.GetNewListPost(token, lastedPostID);
+                var list = _postRepo.GetNewListPost(token, newestPostID);
                 result.ResponseCode = 1000;
                 result.Data = list;
                 result.Message = "OK";
@@ -315,22 +313,32 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <param name="react"></param>
         /// <returns></returns>
-        [HttpPost("like")]
-        public ServiceResult LikeStatusChanged([FromQuery] string token, Guid postID)
+        [HttpPost("reactPost")]
+        public ServiceResult LikeStatusChanged([FromQuery] React react)
         {
             ServiceResult result = new ServiceResult();
             try
             {
-                if (String.IsNullOrWhiteSpace(token) || postID == Guid.Empty)
+
+                var token = react.Token;
+                var postID = react.PostID.ToString();
+
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+
+                if (String.IsNullOrWhiteSpace(postID))
                 {
                     result.ResponseCode = 1002;
                     result.Message = "Số lượng Parameter không đầy đủ";
                     return result;
                 }
-
                 //react.ReactID = Guid.NewGuid();
                 var likeCount = _postService.React(react);
-
                 result.ResponseCode = 1000;
                 result.Message = "OK";
                 result.Data = new
@@ -344,7 +352,6 @@ namespace CNWTT.Controllers
                 result.OnException(ex);
             }
             return result;
-
         }
 
 
