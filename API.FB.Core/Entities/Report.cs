@@ -8,9 +8,10 @@ namespace API.FB.Core.Entities
 {
     public class Report
     {
-        public Guid ReportID { get; set; }
+        public int ReportID { get; set; }
         public Guid UserID { get; set; }
-        public Guid PostID { get; set; }
+        public int PostID { get; set; }
+        public string? Token { get; set; }
         public string Subject { get; set; }
         public string Details { get; set; }
 

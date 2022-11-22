@@ -8,12 +8,17 @@ namespace API.FB.Core.Entities
 {
     public class Comment 
     {
-        public Guid CommentID { get; set; }
+        public int CommentID { get; set; }
 
-        public Guid PostID { get; set; }
+        public int PostID { get; set; }
 
         public Guid UserID { get; set; }
 
+        public string? Token { get; set; }
+
         public string? CommentContent { get; set; }
+
+        public int? Index { get; set; }
+        public int? Count { get; set; }
     }
 }

@@ -20,10 +20,12 @@ namespace API.FB.Core.Interfaces.Repository
         /// CreatedBy: PHDUONG
         List<PostCustom> GetNewListPost(string token, Guid lastedPostID);
 
-        int DeletePost(Guid postID);
+        int DeletePost(Post post);
 
         int UpdatePost(Post post);
+
         int InsertPost(Post post);
+
         int ReportPost(Report report);
 
         int LikePost(string token, Guid postID);

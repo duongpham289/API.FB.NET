@@ -202,19 +202,18 @@ namespace Api.fb.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
-                    result.ResponseCode = 9998;
-                    result.Message = "Sai token";
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
                     return result;
                 }
-                else
-                {
-                    user.Token = null;
-                    // Update token cho user
-                    _userRepository.UpdateTokenForUser(user);
-                    result.ResponseCode = 1000;
-                    result.Message = "OK";
-                    return result;
-                }
+
+                user.Token = null;
+
+                // Update token cho user
+                _userRepository.UpdateTokenForUser(user);
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                return result;
             }
             catch (Exception ex)
             {
