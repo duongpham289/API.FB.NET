@@ -30,8 +30,8 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <returns></returns>
         ///  CreatedBy: PHDUONG(27/08/2021)
-        [HttpGet("get_list_post")]
-        public virtual ServiceResult GetListPost([FromQuery] string token, Guid userID, Guid lastedPostID, int skip, int take)
+        [HttpGet("getListPost")]
+        public virtual IActionResult GetListPost([FromQuery] Guid userID, [FromQuery] string token, [FromQuery] int newestPostID, [FromQuery] int skip, [FromQuery] int skip)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -61,8 +61,8 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <returns></returns>
         ///  CreatedBy: PHDUONG(27/08/2021)
-        [HttpGet("get_new_post")]
-        public ServiceResult GetNewListPost([FromQuery] string token, Guid lastedPostID)
+        [HttpGet("getNewPost")]
+        public IActionResult GetNewListPost([FromQuery] Guid userID, [FromQuery] int newestPostID)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -85,6 +85,72 @@ namespace CNWTT.Controllers
             return result;
 
         }
+
+        /// <summary>
+        /// Lấy về bài viết cụ thể
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <returns></returns>
+        [HttpGet("getPost")]
+        public ServiceResult GetPost([FromQuery] Post post)
+        {
+
+            ServiceResult result = new ServiceResult();
+            try
+            {
+                var token = post.Token;
+                var postID = post.PostID;
+
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+
+                if (postID == null)
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+
+
+                //dic.PostID = Guid.NewGuid();
+                var postResult = _postService.GetPost(post);
+
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                result.Data = new {
+                    PostID = postResult.PostID,
+                    Described = postResult.Described,
+                    Created = postResult.CreatedDate,
+                    Modified = postResult.ModifiedDate,
+                    Like = postResult.ReactCount,
+                    Comment = postResult.CommentCount,
+                    Is_liked = postResult.Is_liked,
+                    Media = postResult.Media,
+                    Author = new
+                    {
+                        AuthorID = postResult.Author_id,
+                        AuthorName = postResult.Author_name,
+                        AuthorAvatar = postResult.Author_avatar,
+                    },
+                    Is_blocked = postResult.Is_blocked,
+
+                };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
+
+        }
+
         /// <summary>
         /// Tạo bài viết mới
         /// </summary>
@@ -99,7 +165,6 @@ namespace CNWTT.Controllers
             {
                 var token = post.Token;
                 var described = post.Described;
-                var userID = post.UserID;
                 var media = post.Media;
                 var status = post.Status;
 
@@ -111,7 +176,7 @@ namespace CNWTT.Controllers
                     return result;
                 }
 
-                if (String.IsNullOrWhiteSpace(described) || userID == Guid.Empty || String.IsNullOrWhiteSpace(token))
+                if (String.IsNullOrWhiteSpace(described) || String.IsNullOrWhiteSpace(token))
                 {
                     result.ResponseCode = 1002;
                     result.Message = "Số lượng Parameter không đầy đủ";
@@ -127,10 +192,11 @@ namespace CNWTT.Controllers
 
 
                 //dic.PostID = Guid.NewGuid();
-                _postService.InsertPost(post);
+                var postID = _postService.InsertPost(post);
 
                 result.ResponseCode = 1000;
                 result.Message = "OK";
+                result.Data = new { PostID = postID };
 
                 return result;
             }
@@ -158,7 +224,6 @@ namespace CNWTT.Controllers
                 var token = post.Token;
                 var postID = post.PostID;
                 var described = post.Described;
-                var userID = post.UserID;
                 var media = post.Media;
                 var status = post.Status;
 
@@ -170,7 +235,7 @@ namespace CNWTT.Controllers
                     return result;
                 }
 
-                if (String.IsNullOrWhiteSpace(described) || userID == Guid.Empty || postID == null)
+                if (String.IsNullOrWhiteSpace(described) || postID == null)
                 {
                     result.ResponseCode = 1002;
                     result.Message = "Số lượng Parameter không đầy đủ";
@@ -231,7 +296,7 @@ namespace CNWTT.Controllers
 
 
                 var serviceResult = _postRepo.DeletePost(post);
-                
+
                 result.ResponseCode = 1000;
                 result.Message = "OK";
                 return result;
@@ -262,9 +327,16 @@ namespace CNWTT.Controllers
                     result.Message = "Số lượng Parameter không đầy đủ";
                     return result;
                 }
-                var res = _postRepo.LikePost(token, postID);
+
+                //react.ReactID = Guid.NewGuid();
+                var likeCount = _postService.React(react);
+
                 result.ResponseCode = 1000;
                 result.Message = "OK";
+                result.Data = new
+                {
+                    LikeCount = likeCount
+                };
                 return result;
             }
             catch (Exception ex)
@@ -276,7 +348,7 @@ namespace CNWTT.Controllers
         }
 
 
-        [HttpGet("reportPost")]
+        [HttpPost("reportPost")]
         public ServiceResult ReportPost([FromQuery] Report report)
         {
             ServiceResult result = new ServiceResult();
@@ -295,7 +367,7 @@ namespace CNWTT.Controllers
                     return result;
                 }
 
-                if (String.IsNullOrWhiteSpace(details) || String.IsNullOrWhiteSpace(subject) || report.UserID == Guid.Empty || postID == null)
+                if (String.IsNullOrWhiteSpace(details) || String.IsNullOrWhiteSpace(subject) || postID == null)
                 {
                     result.ResponseCode = 1002;
                     result.Message = "Số lượng Parameter không đầy đủ";

@@ -9,6 +9,8 @@ namespace API.FB.Core.Interfaces.Services
 {
     public interface IPostService 
     {
+        public Post GetPost(Post post);
+
         public int InsertPost(Post post);
 
         public int UpdatePost(Post post);
@@ -17,6 +19,6 @@ namespace API.FB.Core.Interfaces.Services
         public int ReportPost(Report report);
 
         public List<Post> GetPostList();
-        //public int Like(React react);
+        public int React(React react);
     }
 }

@@ -17,16 +17,17 @@ namespace API.FB.Core.Entities
         public int ResponseCode { get; set; }
 
         /// <summary>
+        /// Thông tin đi kèm
+        /// </summary>
+        /// CreatedBY: PHDUONG
+        public string Message { get; set; }
+
+        /// <summary>
         /// Dữ liệu trả về
         /// </summary>
         /// CreatedBY: PHDUONG
         public object Data { get; set; }
 
-        /// <summary>
-        /// Thông tin đi kèm
-        /// </summary>
-        /// CreatedBY: PHDUONG
-        public string Message { get; set; }
 
 
         public ServiceResult OnException(Exception ex)

@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace API.FB.Core.Entities
 {
-    public class Post 
+    public class Post : BaseEntity
     {
         public int PostID { get; set; }
-        
+
         public Guid UserID { get; set; }
 
         public string? Token { get; set; }
@@ -24,27 +24,27 @@ namespace API.FB.Core.Entities
         /// <summary>
         /// Số like
         /// </summary>
-        public int? like { get; set; }
+        public int? ReactCount { get; set; }
 
         /// <summary>
         /// Số comment
         /// </summary>
-        public int? comment { get; set; }
+        public int? CommentCount { get; set; }
 
         /// <summary>
         /// đã like chưa
         /// </summary>
-        public bool? is_liked { get; set; }
+        public bool? Is_liked { get; set; }
 
         /// <summary>
         /// Có bị block không
         /// </summary>
-        public bool? is_blocked { get; set; }
+        public bool? Is_blocked { get; set; }
 
         /// <summary>
         /// Có thể cmt
         /// </summary>
-        public bool? can_cmt { get; set; }
+        public bool? can_comment { get; set; }
 
         /// <summary>
         /// Có thể sửa k 
@@ -59,17 +59,17 @@ namespace API.FB.Core.Entities
         /// <summary>
         /// ID tác giả
         /// </summary>
-        public Guid? author_id { get; set; }
+        public Guid? Author_id { get; set; }
 
         /// <summary>
         /// Tên tác giả bài viết
         /// </summary>
-        public string author_name { get; set; }
+        public string Author_name { get; set; }
 
         /// <summary>
         /// Avatar tác giả
         /// </summary>
-        public string author_avatar { get; set; }
+        public string Author_avatar { get; set; }
 
         /// <summary>
         /// Trang thái online của tác giả

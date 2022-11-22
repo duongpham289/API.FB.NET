@@ -105,9 +105,25 @@ namespace API.FB.Infrastructure.Repository
                 parameters.Add("@v_media", post.Media);
                 parameters.Add("@v_status", post.Status);
 
-                var data = _dbConnection.Execute($"Proc_InsertPost", param: parameters, commandType: CommandType.StoredProcedure);
+                var postID = _dbConnection.QueryFirstOrDefault<int>($"Proc_InsertPost", param: parameters, commandType: CommandType.StoredProcedure);
 
-                return data;
+
+                return postID;
+            }
+        }
+
+        public Post GetPost(Post post)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@v_token", post.Token);
+                parameters.Add("@v_postID", post.PostID);
+
+                var postResult = _dbConnection.QueryFirstOrDefault<Post>($"Proc_GetPost", param: parameters, commandType: CommandType.StoredProcedure);
+
+
+                return postResult;
             }
         }
 
@@ -136,7 +152,7 @@ namespace API.FB.Infrastructure.Repository
                 parameters.Add("@v_subject", report.Subject);
                 parameters.Add("@v_details", report.Details);
 
-                var data = _dbConnection.Execute($"Proc_ReportPost", param: report, commandType: CommandType.StoredProcedure);
+                var data = _dbConnection.Execute($"Proc_ReportPost", param: parameters, commandType: CommandType.StoredProcedure);
 
                 return data;
             }
@@ -156,7 +172,7 @@ namespace API.FB.Infrastructure.Repository
                 parameters.Add("@v_token", react.Token);
                 parameters.Add("@v_postID", react.PostID);
 
-                var data = _dbConnection.Execute($"Proc_ReactPost", param: react, commandType: CommandType.StoredProcedure);
+                var data = _dbConnection.QueryFirstOrDefault<int>($"Proc_ReactPost", param: parameters, commandType: CommandType.StoredProcedure);
 
                 return data;
             }
