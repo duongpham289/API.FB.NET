@@ -313,37 +313,46 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <param name="react"></param>
         /// <returns></returns>
-        //[HttpPost("like")]
-        //public ServiceResult LikeStatusChanged([FromQuery] string token, Guid postID)
-        //{
-        //    ServiceResult result = new ServiceResult();
-        //    try
-        //    {
-        //        if (String.IsNullOrWhiteSpace(token) || postID == Guid.Empty)
-        //        {
-        //            result.ResponseCode = 1002;
-        //            result.Message = "Số lượng Parameter không đầy đủ";
-        //            return result;
-        //        }
+        [HttpPost("reactPost")]
+        public ServiceResult LikeStatusChanged([FromQuery] React react)
+        {
+            ServiceResult result = new ServiceResult();
+            try
+            {
 
-        //        //react.ReactID = Guid.NewGuid();
-        //        //var likeCount = _postService.React(react);
+                var token = react.Token;
+                var postID = react.PostID.ToString();
 
-        //        result.ResponseCode = 1000;
-        //        result.Message = "OK";
-        //        result.Data = new
-        //        {
-        //            LikeCount = likeCount
-        //        };
-        //        return result;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        result.OnException(ex);
-        //    }
-        //    return result;
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
 
-        //}
+                if (String.IsNullOrWhiteSpace(postID))
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+                //react.ReactID = Guid.NewGuid();
+                var likeCount = _postService.React(react);
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                result.Data = new
+                {
+                    LikeCount = likeCount
+                };
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
+        }
 
 
         [HttpPost("reportPost")]

@@ -164,18 +164,17 @@ namespace API.FB.Infrastructure.Repository
         /// <param name="token"></param>
         /// <param name="postID"></param>
         /// <returns></returns>
-        //public int LikePost(string token, Guid postID)
-        //{
-        //    using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
-        //    {
-        //        var parameters = new DynamicParameters();
-        //        parameters.Add("@v_token", react.Token);
-        //        parameters.Add("@v_postID", react.PostID);
+          public int ReactPost(React react)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@v_token", react.Token);
+                parameters.Add("@v_postID", react.PostID);
+                var data = _dbConnection.QueryFirstOrDefault<int>($"Proc_ReactPost", param: parameters, commandType: CommandType.StoredProcedure);
+                return data;
+            }
+        }
 
-        //        var data = _dbConnection.QueryFirstOrDefault<int>($"Proc_ReactPost", param: parameters, commandType: CommandType.StoredProcedure);
-
-        //        return data;
-        //    }
-        //}
     }
 }

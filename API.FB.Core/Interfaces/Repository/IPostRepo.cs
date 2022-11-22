@@ -23,14 +23,13 @@ namespace API.FB.Core.Interfaces.Repository
         int DeletePost(Post post);
 
         int UpdatePost(Post post);
-
         int InsertPost(Post post);
-        
+
         Post GetPost(Post post);
 
         int ReportPost(Report report);
 
-        //int LikePost(string token, Guid postID);
+        int ReactPost(React react);
 
     }
 }
