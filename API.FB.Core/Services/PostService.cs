@@ -16,6 +16,12 @@ namespace API.FB.Core.Services
         {
             _postRepo = postRepo;
         }
+
+        public Post GetPost(Post post)
+        {
+            return _postRepo.GetPost(post);
+        }
+
         public int InsertPost(Post post)
         {
             return _postRepo.InsertPost(post);
@@ -28,7 +34,7 @@ namespace API.FB.Core.Services
 
 
         public List<Post> GetPostList() { return new List<Post>(); }
-        public int Like(React react) { return _postRepo.ReactPost(react); }
+        public int React(React react) { return _postRepo.ReactPost(react); }
 
 
         public int ReportPost(Report report)

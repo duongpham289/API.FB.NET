@@ -25,6 +25,8 @@ namespace API.FB.Core.Interfaces.Repository
         int UpdatePost(Post post);
 
         int InsertPost(Post post);
+        
+        Post GetPost(Post post);
 
         int ReportPost(Report report);
 
