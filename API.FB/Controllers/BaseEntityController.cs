@@ -111,78 +111,76 @@ namespace API.FB.Controllers
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: PHDUONG(07/08/2021)
-        [HttpPost]
-        public virtual IActionResult Insert(MISAEntity entity)
-        {
-            try
-            {
-                //var serviceReSult = _baseService.Add(entity);
+        //[HttpPost]
+        //public virtual IActionResult Insert(MISAEntity entity)
+        //{
+        //    try
+        //    {
+        //        var serviceReSult = _baseService.Add(entity);
 
-                //if (serviceReSult.IsValid == true)
-                //{
-                //    return StatusCode(201, serviceReSult.Data);
+        //        if (serviceReSult.IsValid == true)
+        //        {
+        //            return StatusCode(201, serviceReSult.Data);
 
-                //}
-                //else
-                //{
-                //    return BadRequest(serviceReSult.Data);
-                //}
-                return StatusCode(201);
-            }
-            catch (Exception ex)
-            {
+        //        }
+        //        else
+        //        {
+        //            return BadRequest(serviceReSult.Data);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
 
-                var errorObj = new
-                {
-                    devMsg = ex.Message,
-                    userMsg = API.FB.Core.Resources.ResourceVN.ExceptionError_Msg,
-                    errorCode = "misa-001",
-                    moreInfo = "https://openapi.misa.com.vn/errorcode/misa-001",
-                    traceId = ""
-                };
-                return StatusCode(500, errorObj);
-            }
-        }
+        //        var errorObj = new
+        //        {
+        //            devMsg = ex.Message,
+        //            userMsg = API.FB.Core.Resources.ResourceVN.ExceptionError_Msg,
+        //            errorCode = "misa-001",
+        //            moreInfo = "https://openapi.misa.com.vn/errorcode/misa-001",
+        //            traceId = ""
+        //        };
+        //        return StatusCode(500, errorObj);
+        //    }
+        //}
 
         /// <summary>
         /// Sửa thông tin của đối tượng
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: PHDUONG(07/08/2021)
-        [HttpPut("{entityId}")]
-        public virtual IActionResult Update(MISAEntity entity, Guid entityId)
-        {
-            try
-            {
-                //var serviceReSult = _baseService.Update(entity, entityId);
+        //[HttpPut("{entityId}")]
+        //public virtual IActionResult Update(MISAEntity entity, Guid entityId)
+        //{
+        //    try
+        //    {
+        //        var serviceReSult = _baseService.Update(entity, entityId);
 
-                //if (serviceReSult.IsValid == true)
-                //{
-                //    return StatusCode(200, serviceReSult.Data);
-                //}
-                //else
-                //{
-                //    return BadRequest(serviceReSult.Data);
-                //}
-                return StatusCode(200);
-            }
-            catch (Exception ex)
-            {
+        //        if (serviceReSult.IsValid == true)
+        //        {
+        //            return StatusCode(200, serviceReSult.Data);
+        //        }
+        //        else
+        //        {
+        //            return BadRequest(serviceReSult.Data);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
 
-                var errorObj = new
-                {
-                    devMsg = ex.Message,
-                    userMsg = API.FB.Core.Resources.ResourceVN.ExceptionError_Msg,
-                    errorCode = "misa-001",
-                    moreInfo = "https://openapi.misa.com.vn/errorcode/misa-001",
-                    traceId = ""
-                };
-                return StatusCode(500, errorObj);
-            }
-
+        //        var errorObj = new
+        //        {
+        //            devMsg = ex.Message,
+        //            userMsg = API.FB.Core.Resources.ResourceVN.ExceptionError_Msg,
+        //            errorCode = "misa-001",
+        //            moreInfo = "https://openapi.misa.com.vn/errorcode/misa-001",
+        //            traceId = ""
+        //        };
+        //        return StatusCode(500, errorObj);
+        //    }
 
 
-        }
+
+        //}
 
 
         /// <summary>

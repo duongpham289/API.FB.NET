@@ -31,34 +31,29 @@ namespace CNWTT.Controllers
         /// <returns></returns>
         ///  CreatedBy: PHDUONG(27/08/2021)
         [HttpGet("getListPost")]
-        public virtual IActionResult GetListPost([FromQuery] Guid userID)
+        public virtual IActionResult GetListPost([FromQuery] Guid userID, [FromQuery] string token, [FromQuery] int newestPostID, [FromQuery] int skip, [FromQuery] int skip)
         {
+            ServiceResult result = new ServiceResult();
             try
             {
-                var entityCode = _postRepo.GetListPost(userID);
-
-                if (entityCode != null)
+                if (String.IsNullOrWhiteSpace(token) || userID == Guid.Empty)
                 {
-                    return StatusCode(200, entityCode);
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+                var list = _postRepo.GetListPost(token, userID, lastedPostID, skip, take);
 
-                }
-                else
-                {
-                    return NoContent();
-                }
+                result.ResponseCode = 1000;
+                result.Data = list;
+                result.Message = "OK";
             }
             catch (Exception ex)
             {
-                var errorObj = new
-                {
-                    devMsg = ex.Message,
-                    userMsg = "Có lỗi xấy ra vui lòng liên hệ  để được hỗ trợ",
-                    errorCode = "misa-001",
-                    moreInfo = "https://openapi.misa.com.vn/errorcode/misa-001",
-                    traceId = ""
-                };
-                return StatusCode(500, errorObj);
+                result.OnException(ex);
             }
+            return result;
+
         }
 
         /// <summary>
@@ -69,32 +64,26 @@ namespace CNWTT.Controllers
         [HttpGet("getNewPost")]
         public IActionResult GetNewListPost([FromQuery] Guid userID, [FromQuery] int newestPostID)
         {
+            ServiceResult result = new ServiceResult();
             try
             {
-                var entityCode = _postRepo.GetNewListPost(userID, newestPostID);
-
-                if (entityCode != null)
+                if (String.IsNullOrWhiteSpace(token) || lastedPostID == Guid.Empty)
                 {
-                    return StatusCode(200, entityCode);
-
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
                 }
-                else
-                {
-                    return NoContent();
-                }
+                var list = _postRepo.GetNewListPost(token, lastedPostID);
+                result.ResponseCode = 1000;
+                result.Data = list;
+                result.Message = "OK";
             }
             catch (Exception ex)
             {
-                var errorObj = new
-                {
-                    devMsg = ex.Message,
-                    userMsg = "Có lỗi xấy ra vui lòng liên hệ  để được hỗ trợ",
-                    errorCode = "misa-001",
-                    moreInfo = "https://openapi.misa.com.vn/errorcode/misa-001",
-                    traceId = ""
-                };
-                return StatusCode(500, errorObj);
+                result.OnException(ex);
             }
+            return result;
+
         }
 
         /// <summary>
@@ -321,26 +310,18 @@ namespace CNWTT.Controllers
 
         }
 
-
-        [HttpPost("reactPost")]
-        public ServiceResult LikeStatusChanged([FromQuery] React react)
+        /// <summary>
+        /// Controller like
+        /// </summary>
+        /// <param name="react"></param>
+        /// <returns></returns>
+        [HttpPost("like")]
+        public ServiceResult LikeStatusChanged([FromQuery] string token, Guid postID)
         {
             ServiceResult result = new ServiceResult();
             try
             {
-
-                var token = react.Token;
-                var postID = react.PostID.ToString();
-
-                User user = _userRepository.GetUserByToken(token);
-                if (user == null)
-                {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
-                    return result;
-                }
-
-                if (String.IsNullOrWhiteSpace(postID))
+                if (String.IsNullOrWhiteSpace(token) || postID == Guid.Empty)
                 {
                     result.ResponseCode = 1002;
                     result.Message = "Số lượng Parameter không đầy đủ";
