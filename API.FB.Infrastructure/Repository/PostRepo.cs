@@ -50,7 +50,7 @@ namespace API.FB.Infrastructure.Repository
         /// <param name="skip"></param>
         /// <param name="take"></param>
         /// <returns></returns>
-        public List<PostCustom> GetListPost(string token, Guid userID, Guid lastedPostID, int skip, int take)
+        public List<Post> GetListPost(string token, Guid userID, Guid lastedPostID, int skip, int take)
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
@@ -60,7 +60,7 @@ namespace API.FB.Infrastructure.Repository
                 parameters.Add("@v_token", token);
                 parameters.Add("@v_skip", skip);
                 parameters.Add("@v_take", take);
-                var data = _dbConnection.Query<PostCustom>($"Proc_ReactPost", param: parameters, commandType: CommandType.StoredProcedure);
+                var data = _dbConnection.Query<Post>($"Proc_ReactPost", param: parameters, commandType: CommandType.StoredProcedure);
 
                 return data.ToList();
             }
@@ -70,12 +70,12 @@ namespace API.FB.Infrastructure.Repository
         /// Lấy dữ liệu Mã entity
         /// </summary>
         /// <returns></returns>
-        public List<PostCustom> GetNewListPost(string token, Guid lastedPostID)
+        public List<Post> GetNewListPost(string token, Guid lastedPostID)
         {
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("@v_postID", lastedPostID);
             parameters.Add("@v_token", token);
-            var data = _dbConnection.Query<PostCustom>($"Proc_GetNewPost", param: parameters, commandType: CommandType.StoredProcedure);
+            var data = _dbConnection.Query<Post>($"Proc_GetNewPost", param: parameters, commandType: CommandType.StoredProcedure);
 
             return data.ToList();
 

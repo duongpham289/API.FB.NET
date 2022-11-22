@@ -20,12 +20,7 @@ namespace API.FB.Core.Entities
         public string? Media { get; set; }
 
         public int? Status { get; set; }
-        
-    }
 
-
-    public class PostCustom : Post
-    {
         /// <summary>
         /// Số like
         /// </summary>
@@ -85,7 +80,6 @@ namespace API.FB.Core.Entities
         /// iđ bài post gần nhất
         /// </summary>
         public Guid? last_id { get; set; }
-
 
     }
 }

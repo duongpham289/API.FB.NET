@@ -12,13 +12,13 @@ namespace API.FB.Core.Interfaces.Repository
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: PHDUONG
-        List<PostCustom> GetListPost(string token, Guid userID, Guid lastedPostID, int skip, int take);
+        List<Post> GetListPost(string token, Guid userID, Guid lastedPostID, int skip, int take);
         /// <summary>
         /// Lấy tất cả Post
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: PHDUONG
-        List<PostCustom> GetNewListPost(string token, Guid lastedPostID);
+        List<Post> GetNewListPost(string token, Guid lastedPostID);
 
         int DeletePost(Post post);
 
