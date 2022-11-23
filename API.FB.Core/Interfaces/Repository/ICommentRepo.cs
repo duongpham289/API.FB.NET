@@ -13,6 +13,6 @@ namespace API.FB.Core.Interfaces.Repository
         /// <returns></returns>
         List<Comment> GetByPostId(Comment comment);
 
-        int InsertComment(Comment comment);
+        List<Comment> InsertComment(Comment comment);
     }
 }

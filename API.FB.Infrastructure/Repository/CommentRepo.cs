@@ -25,25 +25,19 @@ namespace API.FB.Infrastructure.Repository
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
-
-                var token = comment.Token;
-                var postId = comment.PostID;
-                var index = comment.Index;
-                var count = comment.Count;
-
                 DynamicParameters parameters = new DynamicParameters();
                 parameters.Add("@v_postID", comment.PostID);
                 parameters.Add("@v_token", comment.Token);
-                parameters.Add("@v_index", comment.Index);
-                parameters.Add("@v_count", comment.Count);
+                parameters.Add("@v_index", comment.PageIndex ?? 1);
+                parameters.Add("@v_count", comment.PageSize ?? 10);
 
-                var data = _dbConnection.Query<List<Comment>>($"Proc_GetComment", param: parameters, commandType: CommandType.StoredProcedure);
+                var data = _dbConnection.Query<Comment>($"Proc_GetComment", param: parameters, commandType: CommandType.StoredProcedure).ToList();
 
-                return (List<Comment>)data; // làm tạm, chưa đúng
+                return data;
             }
         }
 
-        public int InsertComment(Comment comment)
+        public List<Comment> InsertComment(Comment comment)
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
@@ -52,10 +46,10 @@ namespace API.FB.Infrastructure.Repository
                 parameters.Add("@v_postID", comment.PostID);
                 parameters.Add("@v_token", comment.Token);
                 parameters.Add("@v_comment", comment.CommentContent);
-                parameters.Add("@v_index", comment.Index);
-                parameters.Add("@v_count", comment.Count);
+                parameters.Add("@v_index", comment.PageIndex ?? 1);
+                parameters.Add("@v_count", comment.PageSize ?? 10);
 
-                var data = _dbConnection.Execute($"Proc_InsertComment", param: comment, commandType: CommandType.StoredProcedure);
+                var data = _dbConnection.Query<Comment>($"Proc_InsertComment", param: parameters, commandType: CommandType.StoredProcedure).ToList();
 
                 return data;
             }

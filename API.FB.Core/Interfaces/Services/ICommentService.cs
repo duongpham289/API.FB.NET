@@ -9,6 +9,6 @@ namespace API.FB.Core.Interfaces.Services
 {
     public interface ICommentService 
     {
-        public int InsertComment(Comment comment);
+        public List<Comment> InsertComment(Comment comment);
     }
 }
