@@ -25,7 +25,7 @@ namespace API.FB.Core.Controllers
             _userRepository = userRepository;
         }
 
-        [HttpGet("getComment")]
+        [HttpGet("get_comment")]
         public ServiceResult Get([FromQuery] Comment comment)
         {
             ServiceResult result = new ServiceResult();
@@ -94,7 +94,7 @@ namespace API.FB.Core.Controllers
 
         }
 
-        [HttpPut("setComment")]
+        [HttpPut("set_comment")]
         public ServiceResult Put([FromQuery] Comment comment)
         {
             ServiceResult result = new ServiceResult();

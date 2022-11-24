@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.Extensions.Hosting;
 
 namespace CNWTT.Controllers
 {
@@ -29,22 +30,71 @@ namespace CNWTT.Controllers
         /// Lấy tất cả Code
         /// </summary>
         /// <returns></returns>
-        [HttpGet("getListPost")]
-        public virtual ServiceResult GetListPost([FromQuery] Guid userID, [FromQuery] string token, [FromQuery] int newestPostID, [FromQuery] int skip, [FromQuery] int take)
+        [HttpGet("get_list_post")]
+        public virtual ServiceResult GetListPost([FromQuery] Post post)
         {
             ServiceResult result = new ServiceResult();
             try
             {
-                if (String.IsNullOrWhiteSpace(token) || userID == Guid.Empty)
+
+                var token = post.Token;
+                var latestPostID = post.LatestPostID;
+                var pageCount = post.PageCount;
+                var pageIndex = post.PageIndex;
+
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+
+                if (latestPostID == null || pageCount == null || pageIndex == null)
                 {
                     result.ResponseCode = 1002;
                     result.Message = "Số lượng Parameter không đầy đủ";
                     return result;
                 }
-                var list = _postRepo.GetListPost(token, newestPostID, skip, take);
+
+                var listPost = _postRepo.GetListPost(post);
+
+
+                var listDisplayPost = new List<object>();
+
+                foreach (var item in listPost)
+                {
+                    var temp = new
+                    {
+                        PostID = item.PostID,
+                        Described = item.Described,
+                        Created = item.CreatedDate,
+                        Modified = item.ModifiedDate,
+                        Like = item.ReactCount,
+                        Comment = item.CommentCount,
+                        Is_liked = item.Is_liked,
+                        Media = item.Media,
+                        Author = new
+                        {
+                            AuthorID = item.Author_id,
+                            AuthorName = item.Author_name,
+                            AuthorAvatar = item.Author_avatar,
+                        },
+                        Is_blocked = item.Is_blocked
+
+                    };
+
+                    listDisplayPost.Add(temp);
+                }
 
                 result.ResponseCode = 1000;
-                result.Data = list;
+                result.Data = new
+                {
+                    posts = listDisplayPost,
+                    NewItems = listPost[0].NewItems,
+                    LastID = listPost[0].PostID,
+
+                };
                 result.Message = "OK";
             }
             catch (Exception ex)
@@ -59,21 +109,67 @@ namespace CNWTT.Controllers
         /// Lấy tất cả Code
         /// </summary>
         /// <returns></returns>
-        [HttpGet("getNewPost")]
-        public ServiceResult GetNewListPost([FromQuery] string token, [FromQuery] int newestPostID)
+        [HttpGet("check_new_item")]
+        public ServiceResult GetNewListPost([FromQuery] Post post)
         {
+
             ServiceResult result = new ServiceResult();
             try
             {
-                if (String.IsNullOrWhiteSpace(token) || String.IsNullOrWhiteSpace(newestPostID.ToString()))
+                var token = post.Token;
+                var latestPostID = post.LatestPostID;
+
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+
+                if (latestPostID == null)
                 {
                     result.ResponseCode = 1002;
                     result.Message = "Số lượng Parameter không đầy đủ";
                     return result;
                 }
-                var list = _postRepo.GetNewListPost(token, newestPostID);
+                var listPost = _postRepo.GetNewListPost(post);
+
+                var listDisplayPost = new List<object>();
+
+                foreach (var item in listPost)
+                {
+                    var temp = new
+                    {
+                        PostID = item.PostID,
+                        Described = item.Described,
+                        Created = item.CreatedDate,
+                        Modified = item.ModifiedDate,
+                        Like = item.ReactCount,
+                        Comment = item.CommentCount,
+                        Is_liked = item.Is_liked,
+                        Media = item.Media,
+                        Author = new
+                        {
+                            AuthorID = item.Author_id,
+                            AuthorName = item.Author_name,
+                            AuthorAvatar = item.Author_avatar,
+                        },
+                        Is_blocked = item.Is_blocked
+
+                    };
+
+                    listDisplayPost.Add(temp);
+                }
+
                 result.ResponseCode = 1000;
-                result.Data = list;
+                result.Data = new
+                {
+                    //posts = listDisplayPost,
+                    NewItems = listPost[0].NewItems,
+                    //LastID = listPost[0].PostID,
+
+                };
                 result.Message = "OK";
             }
             catch (Exception ex)
@@ -89,7 +185,7 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <param name="dic"></param>
         /// <returns></returns>
-        [HttpGet("getPost")]
+        [HttpGet("get_post")]
         public ServiceResult GetPost([FromQuery] Post post)
         {
 
@@ -120,7 +216,8 @@ namespace CNWTT.Controllers
 
                 result.ResponseCode = 1000;
                 result.Message = "OK";
-                result.Data = new {
+                result.Data = new
+                {
                     PostID = postResult.PostID,
                     Described = postResult.Described,
                     Created = postResult.CreatedDate,
@@ -154,7 +251,7 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <param name="dic"></param>
         /// <returns></returns>
-        [HttpPost("addPost")]
+        [HttpPost("add_post")]
         public ServiceResult Post([FromQuery] Post post)
         {
 
@@ -213,7 +310,7 @@ namespace CNWTT.Controllers
         /// <param name="entity"> Dữ liệu mới </param>
         /// <returns></returns>
         // PUT api/<MISABaseController>/5
-        [HttpPut("editPost")]
+        [HttpPut("edit_post")]
         public ServiceResult Put([FromQuery] Post post)
         {
             ServiceResult result = new ServiceResult();
@@ -267,7 +364,7 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <param name="entityId"> Id của đối tượng </param>
         /// <returns></returns>
-        [HttpDelete("deletePost")]
+        [HttpDelete("delete_post")]
         public ServiceResult Delete([FromQuery] Post post)
         {
             ServiceResult result = new ServiceResult();
@@ -313,7 +410,7 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <param name="react"></param>
         /// <returns></returns>
-        [HttpPost("reactPost")]
+        [HttpPost("react_post")]
         public ServiceResult LikeStatusChanged([FromQuery] React react)
         {
             ServiceResult result = new ServiceResult();
@@ -355,7 +452,7 @@ namespace CNWTT.Controllers
         }
 
 
-        [HttpPost("reportPost")]
+        [HttpPost("report_post")]
         public ServiceResult ReportPost([FromQuery] Report report)
         {
             ServiceResult result = new ServiceResult();

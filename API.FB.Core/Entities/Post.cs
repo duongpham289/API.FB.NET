@@ -30,6 +30,10 @@ namespace API.FB.Core.Entities
         /// Số comment
         /// </summary>
         public int? CommentCount { get; set; }
+        /// <summary>
+        /// Số post mới
+        /// </summary>
+        public int? NewItems { get; set; }
 
         /// <summary>
         /// đã like chưa
@@ -79,7 +83,15 @@ namespace API.FB.Core.Entities
         /// <summary>
         /// iđ bài post gần nhất
         /// </summary>
-        public Guid? last_id { get; set; }
+        public int? LatestPostID { get; set; }
+        /// <summary>
+        /// iđ bài post gần nhất
+        /// </summary>
+        public int? PageIndex { get; set; }
+        /// <summary>
+        /// iđ bài post gần nhất
+        /// </summary>
+        public int? PageCount{ get; set; }
 
     }
 }

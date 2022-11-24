@@ -36,18 +36,18 @@ namespace API.FB.Infrastructure.Repository
         /// <param name="skip"></param>
         /// <param name="take"></param>
         /// <returns></returns>
-        public List<Post> GetListPost(string token, int lastedPostID, int skip, int take)
+        public List<Post> GetListPost(Post post)
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
                 DynamicParameters parameters = new DynamicParameters();
-                parameters.Add("@v_postID", lastedPostID);
-                parameters.Add("@v_token", token);
-                parameters.Add("@v_skip", skip);
-                parameters.Add("@v_take", take);
-                var data = _dbConnection.Query<Post>($"Proc_GetListPost", param: parameters, commandType: CommandType.StoredProcedure);
+                parameters.Add("@v_latestPostID", post.LatestPostID);
+                parameters.Add("@v_token", post.Token);
+                parameters.Add("@v_pageIndex", post.PageIndex ?? 1);
+                parameters.Add("@v_pageCount", post.PageCount ?? 10);
+                var data = _dbConnection.Query<Post>($"Proc_GetListPost", param: parameters, commandType: CommandType.StoredProcedure).AsList();
 
-                return data.ToList();
+                return data;
             }
         }
 
@@ -55,15 +55,22 @@ namespace API.FB.Infrastructure.Repository
         /// Lấy dữ liệu Mã entity
         /// </summary>
         /// <returns></returns>
-        public List<Post> GetNewListPost(string token, int lastedPostID)
+        public List<Post> GetNewListPost(Post post)
         {
-            DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@v_postID", lastedPostID);
-            parameters.Add("@v_token", token);
-            var data = _dbConnection.Query<Post>($"Proc_GetNewPost", param: parameters, commandType: CommandType.StoredProcedure);
 
-            return data.ToList();
 
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                var token = post.Token;
+                var latestPostID = post.LatestPostID;
+
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@v_latestPostID", latestPostID);
+                parameters.Add("@v_token", token);
+                var data = _dbConnection.Query<Post>($"Proc_GetNewPost", param: parameters, commandType: CommandType.StoredProcedure);
+
+                return data.ToList();
+            }
         }
 
 
@@ -164,7 +171,7 @@ namespace API.FB.Infrastructure.Repository
         /// <param name="token"></param>
         /// <param name="postID"></param>
         /// <returns></returns>
-          public int ReactPost(React react)
+        public int ReactPost(React react)
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
