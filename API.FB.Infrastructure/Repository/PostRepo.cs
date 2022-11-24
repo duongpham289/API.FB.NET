@@ -9,6 +9,8 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
+using System.IO;
 
 namespace API.FB.Infrastructure.Repository
 {
@@ -89,11 +91,26 @@ namespace API.FB.Infrastructure.Repository
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
+
+                var media = post.Media;
+                string mediaString = "";
+
+                if (media.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        media.CopyTo(ms);
+                        var fileBytes = ms.ToArray();
+                        mediaString = Convert.ToBase64String(fileBytes);
+                        // act on the Base64 data
+                    }
+                }
+
                 var parameters = new DynamicParameters();
                 parameters.Add("@v_described", post.Described);
                 parameters.Add("@v_token", post.Token);
                 parameters.Add("@v_postID", post.PostID);
-                parameters.Add("@v_media", post.Media);
+                parameters.Add("@v_media", mediaString);
                 parameters.Add("@v_status", post.Status);
 
                 var data = _dbConnection.Execute($"Proc_UpdatePost", param: parameters, commandType: CommandType.StoredProcedure);
@@ -106,10 +123,24 @@ namespace API.FB.Infrastructure.Repository
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
+                var media = post.Media;
+                string mediaString = "";
+
+                if (media.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        media.CopyTo(ms);
+                        var fileBytes = ms.ToArray();
+                        mediaString = Convert.ToBase64String(fileBytes);
+                        // act on the Base64 data
+                    }
+                }
+
                 var parameters = new DynamicParameters();
                 parameters.Add("@v_described", post.Described);
                 parameters.Add("@v_token", post.Token);
-                parameters.Add("@v_media", post.Media);
+                parameters.Add("@v_media", mediaString);
                 parameters.Add("@v_status", post.Status);
 
                 var postID = _dbConnection.QueryFirstOrDefault<int>($"Proc_InsertPost", param: parameters, commandType: CommandType.StoredProcedure);

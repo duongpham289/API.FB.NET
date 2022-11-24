@@ -6,6 +6,8 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Hosting;
+using System.Drawing;
+using System.IO;
 
 namespace CNWTT.Controllers
 {
@@ -64,6 +66,14 @@ namespace CNWTT.Controllers
 
                 foreach (var item in listPost)
                 {
+                    byte[] bytes = Convert.FromBase64String(item.Image);
+
+                    Image image;
+                    using (MemoryStream ms = new MemoryStream(bytes))
+                    {
+                        image = Image.FromStream(ms);
+                    }
+
                     var temp = new
                     {
                         PostID = item.PostID,
@@ -73,7 +83,7 @@ namespace CNWTT.Controllers
                         Like = item.ReactCount,
                         Comment = item.CommentCount,
                         Is_liked = item.Is_liked,
-                        Media = item.Media,
+                        Image = image,
                         Author = new
                         {
                             AuthorID = item.Author_id,
@@ -139,6 +149,14 @@ namespace CNWTT.Controllers
 
                 foreach (var item in listPost)
                 {
+                    byte[] bytes = Convert.FromBase64String(item.Image);
+
+                    Image image;
+                    using (MemoryStream ms = new MemoryStream(bytes))
+                    {
+                        image = Image.FromStream(ms);
+                    }
+
                     var temp = new
                     {
                         PostID = item.PostID,
@@ -148,7 +166,7 @@ namespace CNWTT.Controllers
                         Like = item.ReactCount,
                         Comment = item.CommentCount,
                         Is_liked = item.Is_liked,
-                        Media = item.Media,
+                        image,
                         Author = new
                         {
                             AuthorID = item.Author_id,
@@ -214,6 +232,20 @@ namespace CNWTT.Controllers
                 //dic.PostID = Guid.NewGuid();
                 var postResult = _postService.GetPost(post);
 
+                byte[] bytes = Convert.FromBase64String(postResult.Image);
+
+                Image image;
+                using (MemoryStream ms = new MemoryStream(bytes))
+                {
+                    image = Image.FromStream(ms);
+
+                    using (Bitmap bm2 = new Bitmap(ms))
+                    {
+                        bm2.Save("C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\" + "API_FB.jpg");
+                    }
+                }
+
+
                 result.ResponseCode = 1000;
                 result.Message = "OK";
                 result.Data = new
@@ -225,7 +257,7 @@ namespace CNWTT.Controllers
                     Like = postResult.ReactCount,
                     Comment = postResult.CommentCount,
                     Is_liked = postResult.Is_liked,
-                    Media = postResult.Media,
+                    image,
                     Author = new
                     {
                         AuthorID = postResult.Author_id,
@@ -252,7 +284,7 @@ namespace CNWTT.Controllers
         /// <param name="dic"></param>
         /// <returns></returns>
         [HttpPost("add_post")]
-        public ServiceResult Post([FromQuery] Post post)
+        public ServiceResult Post([FromForm] Post post)
         {
 
             ServiceResult result = new ServiceResult();
@@ -278,7 +310,7 @@ namespace CNWTT.Controllers
                     return result;
                 }
 
-                if (described?.Length > 65.535 || media?.Length > 65.535)
+                if (described?.Length > 65.535)
                 {
                     result.ResponseCode = 1006;
                     result.Message = "Độ dài đầu vào quá mức cho phép";
@@ -338,7 +370,7 @@ namespace CNWTT.Controllers
                 }
 
 
-                if (described?.Length > 65.535 || media?.Length > 65.535)
+                if (described?.Length > 65.535)
                 {
                     result.ResponseCode = 1006;
                     result.Message = "Độ dài đầu vào quá mức cho phép";
