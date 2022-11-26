@@ -48,7 +48,7 @@ namespace API.FB.Core.Interfaces.Repository
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        int Insert(User user);
+        Guid Insert(User user);
 
         /// <summary>
         /// Sửa user

@@ -14,31 +14,36 @@ namespace API.FB.Core.Controllers
     public class CommentController : ControllerBase
     {
         ICommentRepo _commentRepo;
-        ICommentService _commentService;
 
         IUserRepository _userRepository;
 
-        public CommentController(ICommentRepo commentRepo, ICommentService commentService, IUserRepository userRepository)
+        public CommentController(ICommentRepo commentRepo, IUserRepository userRepository)
         {
             _commentRepo = commentRepo;
-            _commentService = commentService;
             _userRepository = userRepository;
         }
 
         [HttpGet("get_comment")]
-        public ServiceResult Get([FromQuery] Comment comment)
+        public ServiceResult Get([FromForm] Comment comment)
         {
             ServiceResult result = new ServiceResult();
             try
             {
                 var token = comment.Token;
                 var postId = comment.PostID;
-                var index = comment.PageIndex ?? 1;
-                var count = comment.PageSize ?? 10;
+                var index = comment.PageIndex;
+                var count = comment.PageSize;
 
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
                     result.ResponseCode = 1009;
                     result.Message = "Không có quyền truy cập tài nguyên";
                     return result;
@@ -95,7 +100,7 @@ namespace API.FB.Core.Controllers
         }
 
         [HttpPut("set_comment")]
-        public ServiceResult Put([FromQuery] Comment comment)
+        public ServiceResult Put([FromForm] Comment comment)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -103,12 +108,19 @@ namespace API.FB.Core.Controllers
                 var token = comment.Token;
                 var postId = comment.PostID;
                 var commentContent = comment.CommentContent;
-                var index = comment.PageIndex ?? 1;
-                var count = comment.PageSize ?? 10;
+                var index = comment.PageIndex;
+                var count = comment.PageSize;
 
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
                     result.ResponseCode = 1009;
                     result.Message = "Không có quyền truy cập tài nguyên";
                     return result;
@@ -130,7 +142,7 @@ namespace API.FB.Core.Controllers
                 }
 
 
-                var listComment = _commentService.InsertComment(comment);
+                var listComment = _commentRepo.InsertComment(comment);
 
 
                 var listDisplayComment = new List<object>();
@@ -168,9 +180,6 @@ namespace API.FB.Core.Controllers
                 result.OnException(ex);
             }
             return result;
-
-
-
         }
     }
 }

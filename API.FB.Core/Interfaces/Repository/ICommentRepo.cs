@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace API.FB.Core.Interfaces.Repository
 {
-    public interface ICommentRepo : IBaseRepo<Comment>
+    public interface ICommentRepo
     {
         /// <summary>
         /// Hàm gọi theo postID

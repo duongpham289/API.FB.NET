@@ -10,7 +10,7 @@ namespace API.FB.Core.Entities
     {
         public int CommentID { get; set; }
 
-        public int PostID { get; set; }
+        public int? PostID { get; set; }
 
         public Guid UserID { get; set; }
         public string FullName { get; set; }

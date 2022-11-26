@@ -28,13 +28,11 @@ namespace Api.fb.Controllers
     {
         IConfiguration _configuration;
         IAuthRepo _authRepo;
-        IAuthService _authService;
         IUserRepository _userRepository;
 
-        public AuthController(IAuthRepo authRepo, IAuthService authService, IConfiguration configuration, IUserRepository userRepository)
+        public AuthController(IAuthRepo authRepo, IConfiguration configuration, IUserRepository userRepository)
         {
             _authRepo = authRepo;
-            _authService = authService;
             _configuration = configuration;
             _userRepository = userRepository;
         }
@@ -46,14 +44,23 @@ namespace Api.fb.Controllers
         /// <param name="entity"></param>
         /// <returns></returns>
         /// lttuan1
-        [HttpPost("signup")]
-        public ServiceResult Signup([FromQuery] User user)
+        [HttpPost("sign_up")]
+        public ServiceResult Signup([FromForm] User user)
         {
             ServiceResult result = new ServiceResult();
             try
             {
+
+                if (String.IsNullOrWhiteSpace(user.PhoneNumber))
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+
                 // Kiểm tra đữ liệu
                 var isIllegal = _authRepo.CheckSignupLegal(user);
+
                 //Thực hiện validate dữ liệu
                 if (isIllegal)
                 {
@@ -74,12 +81,15 @@ namespace Api.fb.Controllers
                 else
                 {
                     // Thêm mới người dùng
-                    _userRepository.Insert(user);
+                    var userID = _userRepository.Insert(user);
+
                     // Trả về result
                     result.Data = new
                     {
-                        username = user.FullName,
+                        UserID = userID,
+                        UserName = user.FullName,
                     };
+
                     result.ResponseCode = 1000;
                     result.Message = "OK";
                     return result;
@@ -98,8 +108,8 @@ namespace Api.fb.Controllers
         /// <param name="user"></param>
         /// <returns></returns>
         //POST api/<AuthController>
-        [HttpPost("login")]
-        public async Task<ServiceResult> Login([FromQuery] Auth auth)
+        [HttpPost("log_in")]
+        public async Task<ServiceResult> Login([FromForm] Auth auth)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -111,6 +121,7 @@ namespace Api.fb.Controllers
                     return result;
                 }
 
+                // Kiểm tra user
                 var user = AuthenticateUser(auth);
 
                 if (user == null)
@@ -141,6 +152,7 @@ namespace Api.fb.Controllers
                 _userRepository.UpdateTokenForUser(user);
 
                 result.Data = new { user.UserID, user.FullName, Token = tokenString, user.Avatar };
+                result.ResponseCode = 1000;
                 result.Message = "OK";
             }
             catch (Exception ex)
@@ -192,16 +204,31 @@ namespace Api.fb.Controllers
         /// 
         /// </summary>
         /// <returns></returns>
-        [HttpGet("logout")]
-        public async Task<ServiceResult> LogOut([FromQuery] string token)
+        [HttpGet("log_out")]
+        public async Task<ServiceResult> LogOut([FromForm] string token)
         {
             ServiceResult result = new ServiceResult();
             try
             {
+                if (token == null)
+                {
+
+                    result.ResponseCode = 9998;
+                    result.Message = "Sai token";
+                    return result;
+                }
+
                 // Goi user theo token
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
                     result.ResponseCode = 1009;
                     result.Message = "Không có quyền truy cập tài nguyên";
                     return result;
