@@ -76,7 +76,7 @@ namespace Web07.FinalTest.MF960
             services.AddScoped<IPostRepo, PostRepo>();
 
             //Base DI:
-            services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
+            //services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

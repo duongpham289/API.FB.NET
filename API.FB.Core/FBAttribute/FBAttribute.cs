@@ -31,8 +31,6 @@ namespace API.FB.Core.FBAttribute
         {
             _maxFileSize = maxFileSize;
         }
-<<<<<<< Updated upstream
-=======
 
         protected override ValidationResult IsValid(
         object value, ValidationContext validationContext)
@@ -97,7 +95,6 @@ namespace API.FB.Core.FBAttribute
         {
             this.Name = name;
         }
->>>>>>> Stashed changes
     }
 
 

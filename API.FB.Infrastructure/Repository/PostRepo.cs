@@ -164,7 +164,7 @@ namespace API.FB.Infrastructure.Repository
                 {
                     using (var ms = new MemoryStream())
                     {
-                        video.CopyTo(ms);
+                        video[0].CopyTo(ms);
                         var fileBytes = ms.ToArray();
                         mediaString = Convert.ToBase64String(fileBytes);
                     }
@@ -183,8 +183,9 @@ namespace API.FB.Infrastructure.Repository
             }
         }
 
-        public dynamic GetPost(Post post)
+        public object GetPost(Post post, out List<Post> postResult, out List<MediaPost> mediaPostResult)
         {
+            ServiceResult result = new ServiceResult();
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
                 var parameters = new DynamicParameters();
@@ -194,15 +195,12 @@ namespace API.FB.Infrastructure.Repository
                 //var postResult = _dbConnection.QueryFirstOrDefault<Post>($"Proc_GetPost", param: parameters, commandType: CommandType.StoredProcedure);
 
 
-                var result = _dbConnection.QueryMultiple($"Proc_GetPost", param: parameters, commandType: CommandType.StoredProcedure);
+                var res = _dbConnection.QueryMultiple($"Proc_GetPost", param: parameters, commandType: CommandType.StoredProcedure);
 
-                var postResult = result.Read<Post>();
-                var mediaPostResult = result.Read<MediaPost>();
-
-
-
-                return new { PostResult = postResult, mediaPostResult = mediaPostResult };
+                postResult = res.Read<Post>().ToList();
+                mediaPostResult = res.Read<MediaPost>().ToList();
             }
+            return new { postResult, mediaPostResult };
         }
 
         public int DeletePost(Post post)

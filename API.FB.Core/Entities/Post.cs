@@ -23,7 +23,7 @@ namespace API.FB.Core.Entities
         [DataType(DataType.Upload)]
         [MaxFileSize(5 * 1024 * 1024)] // 5MB
         [AllowedExtensions(new string[] { ".mp4", ".mkv" })]
-        public IFormFile? VideoUpload { get; set; }
+        public List<IFormFile>? VideoUpload { get; set; }
 
         [DataType(DataType.Upload)]
         [MaxFileSize(5 * 1024 * 1024)] // 5MB

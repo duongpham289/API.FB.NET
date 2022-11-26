@@ -25,11 +25,10 @@ namespace API.FB.Core.Interfaces.Repository
         int UpdatePost(Post post);
         int InsertPost(Post post);
 
-        dynamic GetPost(Post post);
+        object GetPost(Post post, out List<Post> postResult, out List<MediaPost> postMedia);
 
         int ReportPost(Report report);
 
         int ReactPost(React react);
-
     }
 }

@@ -20,33 +20,7 @@ namespace API.FB.Core.Services
             _postRepo = postRepo;
         }
 
-        public Post GetPost(Post post)
-        {
-            return _postRepo.GetPost(post);
-        }
-
-        public int InsertPost(Post post)
-        {
-            return _postRepo.InsertPost(post);
-        }
-
-        public int UpdatePost(Post post)
-        {
-            return _postRepo.UpdatePost(post);
-        }
-
-
-        public List<Post> GetPostList() { return new List<Post>(); }
-        public int React(React react) { return _postRepo.ReactPost(react); }
-
-
-        public int ReportPost(Report report)
-        {
-            return _postRepo.ReportPost(report);
-        }
-
-
-        public ServiceResult ValidateBeforeRepo(ServiceResult result, string token, string described, List<IFormFile> imageList, IFormFile video)
+        public ServiceResult ValidateBeforeRepo(ServiceResult result, string token, string described, List<IFormFile> imageList, List<IFormFile> video)
         {
             if (token == null)
             {
@@ -84,6 +58,15 @@ namespace API.FB.Core.Services
                 {
                     result.ResponseCode = 1007;
                     result.Message = "Upload thất bại, chỉ được upload ảnh hoặc video";
+                    return result;
+                }
+            }
+            else if (video != null)
+            {
+                if (video.Count > 1)
+                {
+                    result.ResponseCode = 1008;
+                    result.Message = "Số lượng video vượt quá quy định";
                     return result;
                 }
             }

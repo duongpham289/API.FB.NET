@@ -92,51 +92,73 @@ namespace CNWTT.Controllers
                     return result;
                 }
 
-                var postResult = _postRepo.GetPost(post);
+                var postResult = new List<Post>();
+                var postMedia = new List<MediaPost>();
 
-                var postNoMedia = postResult.PostResult;
-                var postMedia = postResult.mediaPostResult;
+                var res = _postRepo.GetPost(post, out postResult, out postMedia);
+
+                if (postResult.Count <= 0)
+                {
+                    result.ResponseCode = 9992;
+                    result.Message = "Bài viết khồng tồn tại";
+                    return result;
+                }
+
+                //var postNoMedia = (postResult.PostResult).Cast<Post>();
+                //var postMedia = (postResult.mediaPostResult).Cast<MediaPost>().ToList();
 
                 string path = "C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\";
 
-                dynamic image = 0;
+                List<Image> imageList = new List<Image>();
+                List<string> videoList = new List<string>();
 
-                FileInfo video = new FileInfo(path + "PostID" + postMedia.PostID + "_Video.mp4");
 
-                if (postMedia.IsImage)
+                if ((bool)postMedia[0].IsImage)
                 {
-                    byte[] bytes = Convert.FromBase64String(postMedia.Image);
-
-                    try
+                    int index = 0;
+                    foreach (var media in postMedia)
                     {
-                        using (MemoryStream ms = new MemoryStream(bytes))
+                        byte[] bytes = Convert.FromBase64String(media.Image);
+
+                        try
                         {
-                            image = Image.FromStream(ms);
-
-                            using (Bitmap bm2 = new Bitmap(ms))
+                            using (MemoryStream ms = new MemoryStream(bytes))
                             {
-                                bm2.Save(path + "PostID" + postMedia.PostID + "_Image.jpg");
+                                var image = Image.FromStream(ms);
+
+
+                                using (Bitmap bm2 = new Bitmap(ms))
+                                {
+                                    bm2.Save(path + "PostID_" + postResult[0].PostID + "_Image_" + index + ".jpg");
+                                }
+
+                                imageList.Add(image);
+
                             }
-
                         }
+                        catch (Exception ex)
+                        {
+                            result.OnException(ex);
+                        }
+                        index++;
                     }
-                    catch (Exception)
-                    {
 
-                    }
 
                 }
                 else
                 {
                     try
                     {
-                        byte[] bytes = Convert.FromBase64String(postMedia.Video);
+                        FileInfo video = new FileInfo(path + "PostID_" + postResult[0].PostID + "_Video.mp4");
+                        byte[] bytes = Convert.FromBase64String(postMedia[0].Video);
 
                         using (Stream sw = video.OpenWrite())
                         {
                             sw.Write(bytes, 0, bytes.Length);
                             sw.Close();
                         }
+
+                        videoList.Add(video.FullName);
                     }
                     catch (Exception ex)
                     {
@@ -144,28 +166,27 @@ namespace CNWTT.Controllers
                     }
                 }
 
-                dynamic media = image ?? video;
-
 
                 result.ResponseCode = 1000;
                 result.Message = "OK";
                 result.Data = new
                 {
-                    PostID = postResult.PostID,
-                    Described = postResult.Described,
-                    Created = postResult.CreatedDate,
-                    Modified = postResult.ModifiedDate,
-                    Like = postResult.ReactCount,
-                    Comment = postResult.CommentCount,
-                    Is_liked = postResult.Is_liked,
-                    media,
+                    PostID = postResult[0].PostID,
+                    Described = postResult[0].Described,
+                    Created = postResult[0].CreatedDate,
+                    Modified = postResult[0].ModifiedDate,
+                    Like = postResult[0].ReactCount,
+                    Comment = postResult[0].CommentCount,
+                    Is_liked = postResult[0].Is_liked,
+                    Image = imageList,
+                    Video = videoList,
                     Author = new
                     {
-                        AuthorID = postResult.Author_id,
-                        AuthorName = postResult.Author_name,
-                        AuthorAvatar = postResult.Author_avatar,
+                        AuthorID = postResult[0].Author_id,
+                        AuthorName = postResult[0].Author_name,
+                        AuthorAvatar = postResult[0].Author_avatar,
                     },
-                    Is_blocked = postResult.Is_blocked,
+                    Is_blocked = postResult[0].Is_blocked,
 
                 };
 
@@ -187,7 +208,7 @@ namespace CNWTT.Controllers
         /// <returns></returns>
         // PUT api/<MISABaseController>/5
         [HttpPut("edit_post")]
-        public ServiceResult Put([FromBody] Post post)
+        public ServiceResult Put([FromForm] Post post)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -234,7 +255,7 @@ namespace CNWTT.Controllers
         /// <param name="entityId"> Id của đối tượng </param>
         /// <returns></returns>
         [HttpDelete("delete_post")]
-        public ServiceResult Delete([FromBody] Post post)
+        public ServiceResult Delete([FromForm] Post post)
         {
             ServiceResult result = new ServiceResult();
 
@@ -374,7 +395,7 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("get_list_post")]
-        public virtual ServiceResult GetListPost([FromBody] Post post)
+        public virtual ServiceResult GetListPost([FromForm] Post post)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -497,7 +518,7 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("check_new_item")]
-        public ServiceResult GetNewListPost([FromBody] Post post)
+        public ServiceResult GetNewListPost([FromForm] Post post)
         {
 
             ServiceResult result = new ServiceResult();
