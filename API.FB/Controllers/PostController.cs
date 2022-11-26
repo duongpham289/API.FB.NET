@@ -43,8 +43,8 @@ namespace CNWTT.Controllers
             {
                 var token = post.Token;
                 var described = post.Described;
-                var imageList = post.ImageFilesUpload;
-                var video = post.VideoUpload;
+                var imageList = post.Image;
+                var video = post.Video;
                 var status = post.Status;
 
                 result = _postService.ValidateBeforeRepo(result: result, token: token, described: described, imageList: imageList, video: video);
@@ -104,10 +104,7 @@ namespace CNWTT.Controllers
                     return result;
                 }
 
-                //var postNoMedia = (postResult.PostResult).Cast<Post>();
-                //var postMedia = (postResult.mediaPostResult).Cast<MediaPost>().ToList();
-
-                string path = "C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\";
+                string path = "C:\\Users\\20187315\\Desktop\\Pic\\";
 
                 List<Image> imageList = new List<Image>();
                 List<string> videoList = new List<string>();
@@ -216,10 +213,19 @@ namespace CNWTT.Controllers
                 var token = post.Token;
                 var postID = post.PostID;
                 var described = post.Described;
-                var imageList = post.ImageFilesUpload;
-                var video = post.VideoUpload;
+                var imageList = post.Image;
+                var video = post.Video;
                 var listImageDelete = post.ListImageDelete;
                 var status = post.Status;
+
+
+                bool permission = _postRepo.GetPermissionPostAction(post);
+                if (!permission)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
 
                 _postService.ValidateBeforeRepo(result: result, token: token, described: described, imageList: imageList, video: video);
 
@@ -271,6 +277,21 @@ namespace CNWTT.Controllers
                     result.Message = "Không có quyền truy cập tài nguyên";
                     return result;
                 }
+                else if (user.Token != token)
+                {
+
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+
+                bool permission = _postRepo.GetPermissionPostAction(post);
+                if (!permission)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
 
                 if (postID == null)
                 {
@@ -301,7 +322,7 @@ namespace CNWTT.Controllers
         /// <param name="react"></param>
         /// <returns></returns>
         [HttpPost("react_post")]
-        public ServiceResult LikeStatusChanged([FromBody] React react)
+        public ServiceResult LikeStatusChanged([FromForm] React react)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -313,6 +334,13 @@ namespace CNWTT.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
                     result.ResponseCode = 1009;
                     result.Message = "Không có quyền truy cập tài nguyên";
                     return result;
@@ -344,7 +372,7 @@ namespace CNWTT.Controllers
 
 
         [HttpPost("report_post")]
-        public ServiceResult ReportPost([FromBody] Report report)
+        public ServiceResult ReportPost([FromForm] Report report)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -357,6 +385,13 @@ namespace CNWTT.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
                     result.ResponseCode = 1009;
                     result.Message = "Không có quyền truy cập tài nguyên";
                     return result;
@@ -402,13 +437,20 @@ namespace CNWTT.Controllers
             {
 
                 var token = post.Token;
-                var latestPostID = post.LatestPostID;
+                var latestPostID = post.last_id;
                 var pageCount = post.PageCount;
                 var pageIndex = post.PageIndex;
 
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
                     result.ResponseCode = 1009;
                     result.Message = "Không có quyền truy cập tài nguyên";
                     return result;
@@ -421,56 +463,81 @@ namespace CNWTT.Controllers
                     return result;
                 }
 
-                var listPost = _postRepo.GetListPost(post);
+                var postResult = new List<Post>();
+                var postMedia = new List<MediaPost>();
 
+                var listPost = _postRepo.GetListPost(post, out postResult, out postMedia);
+
+                if (postResult.Count <= 0)
+                {
+                    result.ResponseCode = 9992;
+                    result.Message = "Bài viết khồng tồn tại";
+                    return result;
+                }
 
                 var listDisplayPost = new List<object>();
 
-                foreach (var item in listPost)
+                foreach (var item in postResult)
                 {
-                    string path = "C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\";
+                    string path = "C:\\Users\\20187315\\Desktop\\Pic\\";
 
-                    dynamic image = 0;
+                    List<Image> imageList = new List<Image>();
+                    List<string> videoList = new List<string>();
 
-                    FileInfo video = new FileInfo(path + "PostID" + item.PostID + "_Video.mp4");
 
-                    if (item.Image != null)
+                    foreach (var media in postMedia)
                     {
-                        byte[] bytes = Convert.FromBase64String(item.Image);
-
-                        try
+                        if (item.PostID == media.PostID)
                         {
-                            using (MemoryStream ms = new MemoryStream(bytes))
+                            if ((bool)media.IsImage)
                             {
-                                image = Image.FromStream(ms);
+                                int index = 0;
+                                byte[] bytes = Convert.FromBase64String(media.Image);
 
-                                using (Bitmap bm2 = new Bitmap(ms))
+                                try
                                 {
-                                    bm2.Save(path + "PostID" + item.PostID + "_Image.jpg");
-                                }
+                                    using (MemoryStream ms = new MemoryStream(bytes))
+                                    {
+                                        var image = Image.FromStream(ms);
 
+
+                                        using (Bitmap bm2 = new Bitmap(ms))
+                                        {
+                                            bm2.Save(path + "PostID_" + item.PostID + "_Image_" + index + ".jpg");
+                                        }
+
+                                        imageList.Add(image);
+
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    result.OnException(ex);
+                                }
+                                index++;
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    FileInfo video = new FileInfo(path + "PostID_" + item.PostID + "_Video.mp4");
+                                    byte[] bytes = Convert.FromBase64String(media.Video);
+
+                                    using (Stream sw = video.OpenWrite())
+                                    {
+                                        sw.Write(bytes, 0, bytes.Length);
+                                        sw.Close();
+                                    }
+
+                                    videoList.Add(video.FullName);
+                                }
+                                catch (Exception ex)
+                                {
+                                    result.OnException(ex);
+                                }
                             }
                         }
-                        catch (Exception)
-                        {
-                            try
-                            {
-
-                                using (Stream sw = video.OpenWrite())
-                                {
-                                    sw.Write(bytes, 0, bytes.Length);
-                                    sw.Close();
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                result.OnException(ex);
-                            }
-                        }
-
                     }
-
-                    dynamic media = image ?? video;
 
                     var temp = new
                     {
@@ -481,14 +548,15 @@ namespace CNWTT.Controllers
                         Like = item.ReactCount,
                         Comment = item.CommentCount,
                         Is_liked = item.Is_liked,
-                        Image = image,
+                        Image = imageList,
+                        Video = videoList,
                         Author = new
                         {
                             AuthorID = item.Author_id,
                             AuthorName = item.Author_name,
                             AuthorAvatar = item.Author_avatar,
                         },
-                        Is_blocked = item.Is_blocked
+                        Is_blocked = item.Is_blocked,
 
                     };
 
@@ -499,8 +567,8 @@ namespace CNWTT.Controllers
                 result.Data = new
                 {
                     posts = listDisplayPost,
-                    NewItems = listPost[0].NewItems,
-                    LastID = listPost[0].PostID,
+                    NewItems = postResult[0].NewItems,
+                    LastID = postResult[0].PostID,
 
                 };
                 result.Message = "OK";
@@ -525,10 +593,16 @@ namespace CNWTT.Controllers
             try
             {
                 var token = post.Token;
-                var latestPostID = post.LatestPostID;
+                var latestPostID = post.last_id;
 
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+                else if (user.Token != token)
                 {
                     result.ResponseCode = 1009;
                     result.Message = "Không có quyền truy cập tài nguyên";
@@ -541,57 +615,82 @@ namespace CNWTT.Controllers
                     result.Message = "Số lượng Parameter không đầy đủ";
                     return result;
                 }
-                var listPost = _postRepo.GetNewListPost(post);
+
+                var postResult = new List<Post>();
+                var postMedia = new List<MediaPost>();
+
+                var listPost = _postRepo.GetNewListPost(post, out postResult, out postMedia);
+
+                if (postResult.Count <= 0)
+                {
+                    result.ResponseCode = 9992;
+                    result.Message = "Bài viết khồng tồn tại";
+                    return result;
+                }
 
                 var listDisplayPost = new List<object>();
 
-                foreach (var item in listPost)
+                foreach (var item in postResult)
                 {
+                    string path = "C:\\Users\\20187315\\Desktop\\Pic\\";
 
-                    string date = DateTime.Now.ToString().Replace(@"/", @"_").Replace(@":", @"_").Replace(@" ", @"_");
-                    string path = "C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\";
+                    List<Image> imageList = new List<Image>();
+                    List<string> videoList = new List<string>();
 
-                    dynamic image = 0;
 
-                    FileInfo video = new FileInfo(path + "PostID" + item.PostID + "_Video.mp4");
-
-                    if (item.Image != null)
+                    foreach (var media in postMedia)
                     {
-                        byte[] bytes = Convert.FromBase64String(item.Image);
-
-                        try
+                        if (item.PostID == media.PostID)
                         {
-                            using (MemoryStream ms = new MemoryStream(bytes))
+                            if ((bool)media.IsImage)
                             {
-                                image = Image.FromStream(ms);
+                                int index = 0;
+                                byte[] bytes = Convert.FromBase64String(media.Image);
 
-                                using (Bitmap bm2 = new Bitmap(ms))
+                                try
                                 {
-                                    bm2.Save(path + "PostID" + item.PostID + "_Image.jpg");
-                                }
+                                    using (MemoryStream ms = new MemoryStream(bytes))
+                                    {
+                                        var image = Image.FromStream(ms);
 
+
+                                        using (Bitmap bm2 = new Bitmap(ms))
+                                        {
+                                            bm2.Save(path + "PostID_" + item.PostID + "_Image_" + index + ".jpg");
+                                        }
+
+                                        imageList.Add(image);
+
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    result.OnException(ex);
+                                }
+                                index++;
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    FileInfo video = new FileInfo(path + "PostID_" + item.PostID + "_Video.mp4");
+                                    byte[] bytes = Convert.FromBase64String(media.Video);
+
+                                    using (Stream sw = video.OpenWrite())
+                                    {
+                                        sw.Write(bytes, 0, bytes.Length);
+                                        sw.Close();
+                                    }
+
+                                    videoList.Add(video.FullName);
+                                }
+                                catch (Exception ex)
+                                {
+                                    result.OnException(ex);
+                                }
                             }
                         }
-                        catch (Exception)
-                        {
-                            try
-                            {
-
-                                using (Stream sw = video.OpenWrite())
-                                {
-                                    sw.Write(bytes, 0, bytes.Length);
-                                    sw.Close();
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                result.OnException(ex);
-                            }
-                        }
-
                     }
-
-                    dynamic media = image ?? video;
 
                     var temp = new
                     {
@@ -602,14 +701,15 @@ namespace CNWTT.Controllers
                         Like = item.ReactCount,
                         Comment = item.CommentCount,
                         Is_liked = item.Is_liked,
-                        media,
+                        Image = imageList,
+                        Video = videoList,
                         Author = new
                         {
                             AuthorID = item.Author_id,
                             AuthorName = item.Author_name,
                             AuthorAvatar = item.Author_avatar,
                         },
-                        Is_blocked = item.Is_blocked
+                        Is_blocked = item.Is_blocked,
 
                     };
 
@@ -620,8 +720,8 @@ namespace CNWTT.Controllers
                 result.Data = new
                 {
                     //posts = listDisplayPost,
-                    NewItems = listPost[0].NewItems,
-                    //LastID = listPost[0].PostID,
+                    NewItems = postResult[0].NewItems,
+                    //LastID = postResult[0].PostID,
 
                 };
                 result.Message = "OK";

@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.IO;
+using System.Collections;
 
 namespace API.FB.Infrastructure.Repository
 {
@@ -38,41 +39,46 @@ namespace API.FB.Infrastructure.Repository
         /// <param name="skip"></param>
         /// <param name="take"></param>
         /// <returns></returns>
-        public List<Post> GetListPost(Post post)
+        public object GetListPost(Post post, out List<Post> postResult, out List<MediaPost> mediaPostResult)
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
                 DynamicParameters parameters = new DynamicParameters();
-                parameters.Add("@v_latestPostID", post.LatestPostID);
+                parameters.Add("@v_LastID", post.last_id);
                 parameters.Add("@v_token", post.Token);
                 parameters.Add("@v_pageIndex", post.PageIndex ?? 1);
                 parameters.Add("@v_pageCount", post.PageCount ?? 10);
-                var data = _dbConnection.Query<Post>($"Proc_GetListPost", param: parameters, commandType: CommandType.StoredProcedure).AsList();
 
-                return data;
+                var res = _dbConnection.QueryMultiple($"Proc_GetListPost", param: parameters, commandType: CommandType.StoredProcedure);
+
+                postResult = res.Read<Post>().ToList();
+                mediaPostResult = res.Read<MediaPost>().ToList();
             }
+            return new { postResult, mediaPostResult };
         }
 
         /// <summary>
         /// Lấy dữ liệu Mã entity
         /// </summary>
         /// <returns></returns>
-        public List<Post> GetNewListPost(Post post)
+        public object GetNewListPost(Post post, out List<Post> postResult, out List<MediaPost> mediaPostResult)
         {
-
-
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
                 var token = post.Token;
-                var latestPostID = post.LatestPostID;
+                var latestPostID = post.last_id;
 
                 DynamicParameters parameters = new DynamicParameters();
-                parameters.Add("@v_latestPostID", latestPostID);
+                parameters.Add("@v_LastID", latestPostID);
                 parameters.Add("@v_token", token);
-                var data = _dbConnection.Query<Post>($"Proc_GetNewPost", param: parameters, commandType: CommandType.StoredProcedure);
 
-                return data.ToList();
+                var res = _dbConnection.QueryMultiple($"Proc_GetNewPost", param: parameters, commandType: CommandType.StoredProcedure);
+
+                postResult = res.Read<Post>().ToList();
+                mediaPostResult = res.Read<MediaPost>().ToList();
             }
+            return new { postResult, mediaPostResult };
+        
         }
 
 
@@ -92,24 +98,61 @@ namespace API.FB.Infrastructure.Repository
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
 
-                var media = post.Media;
+                var imageList = post.Image;
+                var video = post.Video;
+
                 string mediaString = "";
 
-                if (media.Length > 0)
+                var isImage = false;
+
+                if (imageList != null)
+                {
+                    isImage = true;
+
+                    foreach (var image in imageList)
+                    {
+                        using (var ms = new MemoryStream())
+                        {
+                            image.CopyTo(ms);
+                            var fileBytes = ms.ToArray();
+                            mediaString = Convert.ToBase64String(fileBytes);
+                        }
+
+                        var parametersImagePost = new DynamicParameters();
+                        parametersImagePost.Add("@v_PostID", post.PostID);
+                        parametersImagePost.Add("@v_Media", mediaString);
+                        parametersImagePost.Add("@v_IsImage", isImage);
+
+                        _dbConnection.QueryFirstOrDefault<int>($"Proc_Insert_ImagePost", param: parametersImagePost, commandType: CommandType.StoredProcedure);
+
+                    }
+                }
+                else if (video != null) 
                 {
                     using (var ms = new MemoryStream())
                     {
-                        media.CopyTo(ms);
+                        video[0].CopyTo(ms);
                         var fileBytes = ms.ToArray();
                         mediaString = Convert.ToBase64String(fileBytes);
-                        // act on the Base64 data
                     }
+
+                    var parametersImagePost = new DynamicParameters();
+                    parametersImagePost.Add("@v_PostID", post.PostID);
+                    parametersImagePost.Add("@v_Media", mediaString);
+                    parametersImagePost.Add("@v_IsImage", isImage);
+
+                    _dbConnection.QueryFirstOrDefault<int>($"Proc_Insert_ImagePost", param: parametersImagePost, commandType: CommandType.StoredProcedure);
                 }
+
+                var listImageDelete = post.ListImageDelete;
+
+                var listDeleteString = listImageDelete.Replace(';',',');
 
                 var parameters = new DynamicParameters();
                 parameters.Add("@v_described", post.Described);
                 parameters.Add("@v_token", post.Token);
                 parameters.Add("@v_postID", post.PostID);
+                parameters.Add("@v_listImageDelete", listDeleteString);
                 parameters.Add("@v_media", mediaString);
                 parameters.Add("@v_status", post.Status);
 
@@ -131,8 +174,8 @@ namespace API.FB.Infrastructure.Repository
 
                 var postID = _dbConnection.QueryFirstOrDefault<int>($"Proc_InsertPost", param: parameters, commandType: CommandType.StoredProcedure);
 
-                var imageList = post.ImageFilesUpload;
-                var video = post.VideoUpload;
+                var imageList = post.Image;
+                var video = post.Video;
 
                 string mediaString = "";
 
@@ -160,7 +203,7 @@ namespace API.FB.Infrastructure.Repository
 
                     }
                 }
-                else
+                else if(video != null)
                 {
                     using (var ms = new MemoryStream())
                     {
@@ -185,15 +228,11 @@ namespace API.FB.Infrastructure.Repository
 
         public object GetPost(Post post, out List<Post> postResult, out List<MediaPost> mediaPostResult)
         {
-            ServiceResult result = new ServiceResult();
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("@v_token", post.Token);
                 parameters.Add("@v_postID", post.PostID);
-
-                //var postResult = _dbConnection.QueryFirstOrDefault<Post>($"Proc_GetPost", param: parameters, commandType: CommandType.StoredProcedure);
-
 
                 var res = _dbConnection.QueryMultiple($"Proc_GetPost", param: parameters, commandType: CommandType.StoredProcedure);
 
@@ -210,6 +249,7 @@ namespace API.FB.Infrastructure.Repository
             {
                 DynamicParameters parameters = new DynamicParameters();
                 parameters.Add("@v_postID", post.PostID);
+                parameters.Add("@v_token", post.Token);
 
 
                 var data = _dbConnection.Execute($"Proc_DeletePost", param: parameters, commandType: CommandType.StoredProcedure);
@@ -252,5 +292,16 @@ namespace API.FB.Infrastructure.Repository
             }
         }
 
+        public bool GetPermissionPostAction(Post post)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@v_token", post.Token);
+                parameters.Add("@v_postID", post.PostID);
+                var data = _dbConnection.QueryFirstOrDefault<int>($"Proc_GetPermissionPostAction", param: parameters, commandType: CommandType.StoredProcedure);
+                return data == 1 ? true : false;
+            }
+        }
     }
 }

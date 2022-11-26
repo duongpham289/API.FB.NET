@@ -23,22 +23,15 @@ namespace API.FB.Core.Entities
         [DataType(DataType.Upload)]
         [MaxFileSize(5 * 1024 * 1024)] // 5MB
         [AllowedExtensions(new string[] { ".mp4", ".mkv" })]
-        public List<IFormFile>? VideoUpload { get; set; }
+        public List<IFormFile>? Video { get; set; }
 
         [DataType(DataType.Upload)]
         [MaxFileSize(5 * 1024 * 1024)] // 5MB
         [AllowedExtensions(new string[] { ".jpg", ".png" })]
-        public List<IFormFile>? ImageFilesUpload { get; set; }
-
-        public string? ImageListDownLoad { get; set; }
-
-        public string? VideoDownLoad { get; set; }
-
-        public List<int>? ListImageDelete { get; set; }
+        public List<IFormFile>? Image { get; set; }
+        public string? ListImageDelete { get; set; }
 
         public int? Status { get; set; }
-
-        public string? Image { get; set; }
         public IFormFile? Media { get; set; }
 
         /// <summary>
@@ -98,12 +91,12 @@ namespace API.FB.Core.Entities
         /// <summary>
         /// Trang thái online của tác giả
         /// </summary>
-        public bool? author_onlike { get; set; }
+        public bool? author_online { get; set; }
 
         /// <summary>
         /// iđ bài post gần nhất
         /// </summary>
-        public int? LatestPostID { get; set; }
+        public int? last_id { get; set; }
         /// <summary>
         /// iđ bài post gần nhất
         /// </summary>

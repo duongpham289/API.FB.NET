@@ -24,7 +24,7 @@ namespace API.FB.Core.Controllers
         }
 
         [HttpGet("get_comment")]
-        public ServiceResult Get([FromBody] Comment comment)
+        public ServiceResult Get([FromForm] Comment comment)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -37,6 +37,13 @@ namespace API.FB.Core.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
                     result.ResponseCode = 1009;
                     result.Message = "Không có quyền truy cập tài nguyên";
                     return result;
@@ -93,7 +100,7 @@ namespace API.FB.Core.Controllers
         }
 
         [HttpPut("set_comment")]
-        public ServiceResult Put([FromBody] Comment comment)
+        public ServiceResult Put([FromForm] Comment comment)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -107,6 +114,13 @@ namespace API.FB.Core.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
                     result.ResponseCode = 1009;
                     result.Message = "Không có quyền truy cập tài nguyên";
                     return result;

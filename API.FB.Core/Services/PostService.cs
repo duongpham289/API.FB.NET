@@ -37,6 +37,12 @@ namespace API.FB.Core.Services
                 result.Message = "Không có quyền truy cập tài nguyên";
                 return result;
             }
+            else if (user.Token != token)
+            {
+                result.ResponseCode = 1009;
+                result.Message = "Không có quyền truy cập tài nguyên";
+                return result;
+            }
 
             if (String.IsNullOrWhiteSpace(described))
             {
@@ -72,5 +78,7 @@ namespace API.FB.Core.Services
             }
             return result;
         }
+
+
     }
 }

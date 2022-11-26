@@ -45,7 +45,7 @@ namespace Api.fb.Controllers
         /// <returns></returns>
         /// lttuan1
         [HttpPost("sign_up")]
-        public ServiceResult Signup([FromBody] User user)
+        public ServiceResult Signup([FromForm] User user)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -81,12 +81,12 @@ namespace Api.fb.Controllers
                 else
                 {
                     // Thêm mới người dùng
-                    _userRepository.Insert(user);
+                    var userID = _userRepository.Insert(user);
 
                     // Trả về result
                     result.Data = new
                     {
-                        UserID = user.UserID,
+                        UserID = userID,
                         UserName = user.FullName,
                     };
 
@@ -109,7 +109,7 @@ namespace Api.fb.Controllers
         /// <returns></returns>
         //POST api/<AuthController>
         [HttpPost("log_in")]
-        public async Task<ServiceResult> Login([FromBody] Auth auth)
+        public async Task<ServiceResult> Login([FromForm] Auth auth)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -205,7 +205,7 @@ namespace Api.fb.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("log_out")]
-        public async Task<ServiceResult> LogOut([FromBody] string token)
+        public async Task<ServiceResult> LogOut([FromForm] string token)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -222,6 +222,13 @@ namespace Api.fb.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
                     result.ResponseCode = 1009;
                     result.Message = "Không có quyền truy cập tài nguyên";
                     return result;
