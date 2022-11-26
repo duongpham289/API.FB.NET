@@ -75,7 +75,6 @@ namespace API.FB.Core.Controllers
 
 
                 }
-
                 result.ResponseCode = 1000;
                 result.Message = "OK";
                 result.Data = new
@@ -83,7 +82,6 @@ namespace API.FB.Core.Controllers
                     PostID = postId,
                     Comment = listDisplayComment
                 };
-
                 return result;
             }
             catch (Exception ex)

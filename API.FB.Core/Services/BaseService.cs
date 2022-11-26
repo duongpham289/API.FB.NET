@@ -1,132 +1,95 @@
-﻿using API.FB.Core.Entities;
-using API.FB.Core.Interfaces.Repository;
+﻿using API.FB.Core.Interfaces.Repository;
 using API.FB.Core.Interfaces.Services;
-using API.FB.Core.MISAAttribute;
+//using MISA.Core.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace API.FB.Core.Services
 {
-    public class BaseService<MISAEntity> : IBaseService<MISAEntity>
+    public class BaseService<T> : IBaseService<T>
     {
-        #region DECLARE
-
-        IBaseRepository<MISAEntity> _baseRepository;
-        protected ServiceResult _serviceResult;
-        #endregion
-
-        #region Constructor
-        public BaseService(IBaseRepository<MISAEntity> baseRepository)
+        IBaseRepo<T> _baseRepo;
+        protected List<String> ValidateErrorsMsg;
+        string _tableName;
+        public BaseService(IBaseRepo<T> baseRepo)
         {
-            _baseRepository = baseRepository;
-            _serviceResult = new ServiceResult();
+            _baseRepo = baseRepo;
+            ValidateErrorsMsg = new List<String>();
+            _tableName = typeof(T).Name;
         }
-        #endregion
-
-        #region Methods
-
         /// <summary>
-        /// Thêm mới dữ liệu
+        /// Kiểm tra dữ liệu khi insert
         /// </summary>
-        /// <param name="entity">Dữ liệu truyền vào</param>
+        /// <param name="entity">entity nhân viên để kiểm tra</param>
         /// <returns></returns>
-        /// CreatedBy: PHDUONG(16/08/2021)
-        public ServiceResult Add(MISAEntity entity)
+        /// <exception cref="exception"></exception>
+        /// CreatedBy: BDAnh(08/11/2022)
+        public int InsertService(T entity)
         {
-
-            if (!ValidateData(entity))
+            //Thực hiện validate dữ liệu
+            var isValid = Validate(entity);
+            //Thực hiện thêm mới vào database:
+            if (isValid.Count() == 0)
             {
-                _serviceResult.IsValid = ValidateData(entity);
-                return _serviceResult;
+                var res = _baseRepo.Insert(entity);
+                return res;
             }
-            else if (!ValidateCustom(entity))
+            else
             {
-                return _serviceResult;
+                //throw new HUSTValidateException("Dữ liệu đầu vào không hợp lệ", isValid);
+                return 1;
             }
-
-            _serviceResult.Data = _baseRepository.Add(entity);
-
-            return _serviceResult;
 
         }
-
         /// <summary>
-        /// Sửa dữ liệu trong DataBase
+        /// Kiểm tra dữ liệu khi insert
         /// </summary>
-        /// <param name="entity">Dữ liệu truyền vào</param>
+        /// <param name="entity">entity nhân viên để kiểm tra</param>
         /// <returns></returns>
-        /// CreatedBy: PHDUONG(16/08/2021)
-        public ServiceResult Update(MISAEntity entity, Guid entityId)
+        /// <exception cref="MISAValidateException"></exception>
+        /// CreatedBy: BDAnh(10/05/2022)
+        public int UpdateService(Guid id, T entity)
         {
-            if (!ValidateData(entity))
+            var isValid = Validate(entity);
+            //Thực hiện thêm mới vào database:
+            if (isValid.Count() == 0)
             {
-                _serviceResult.IsValid = ValidateData(entity);
-                return _serviceResult;
+                var res = _baseRepo.Update(id, entity);
+                return res;
             }
-            else if (!ValidateCustom(entity))
+            else
             {
-                return _serviceResult;
+                //throw new HUSTValidateException("Dữ liệu đầu vào không hợp lệ", isValid);
+                return 1;
+
             }
-
-            _serviceResult.Data = _baseRepository.Update(entity, entityId);
-
-            return _serviceResult;
         }
 
-        #endregion
-
-        #region ValidateMethods
         /// <summary>
-        /// Xử lí validate dữ liêu chung
+        /// Validate chung
         /// </summary>
-        /// <param name="entity">đối tượng muốn thưc hiện validate</param>
-        /// <returns>true - dữ liệu hơp lệ, false - dữ liệu không hợp lệ</returns>
-        /// CreatedBy: PHDUONG(18/08/2021)
-        private bool ValidateData(MISAEntity entity)
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        /// CreatedBy: BDAnh(08/11/2022)
+        protected virtual List<string> Validate(T entity)
         {
-            var isValid = true;
-
-            // 1. Lay thong tin cac properties:
-            var properties = typeof(MISAEntity).GetProperties();
-
-            //2. Xac dinh  viec validate dựa trên attribute: (MISARequired - bat buoc check thong tin, khong duoc phep null  hoac de trong)
-            foreach (var prop in properties)
+            List<string> errors = new List<string>();
+            ValidationContext context = new ValidationContext(entity);
+            var validateEntity = new List<ValidationResult>();
+            bool result = Validator.TryValidateObject(entity, context, validateEntity, true);
+            if (!result)
             {
-                var propValue = prop.GetValue(entity);
-
-                var propName = prop.Name;
-
-                //Kiem tra xem property hien tai co bat buoc nhap hay khong
-                var propMISARequireds = prop.GetCustomAttributes(typeof(MISARequired), true);
-                if (propMISARequireds.Length > 0)
+                validateEntity.ToList().ForEach((error) =>
                 {
-                    var message = (propMISARequireds[0] as MISARequired)._message;
-                    if (prop.PropertyType == typeof(string) && (propValue == null || propValue.ToString() == string.Empty))
-                    {
-                        isValid = false;
-                        _serviceResult.Message = message;
-                        return isValid;
-                    }
-                }
-            }
-            return isValid;
-        }
+                    errors.Add(error.ErrorMessage);
+                });
+            };
 
-        /// <summary>
-        /// Check dữ liêu trước khi thêm mới
-        /// </summary>
-        /// <param name="entity">Thực thể cần check</param>
-        /// <returns></returns>
-        /// CreatedBy: PHDUONG(17/08/2021)
-        protected virtual bool ValidateCustom(MISAEntity entity)
-        {
-            var isValid = true;
-
-            return isValid;
+            return errors;
         }
-        #endregion
     }
 }

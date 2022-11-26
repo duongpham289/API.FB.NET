@@ -148,7 +148,6 @@ namespace Api.fb.Controllers
 
                 var tokenString = this.GenerateAccessToken(claims);
                 user.Token = tokenString;
-
                 // Update token cho user
                 _userRepository.UpdateTokenForUser(user);
 
@@ -232,7 +231,6 @@ namespace Api.fb.Controllers
 
                 // Update token cho user
                 _userRepository.UpdateTokenForUser(user);
-
                 result.ResponseCode = 1000;
                 result.Message = "OK";
                 return result;

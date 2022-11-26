@@ -43,6 +43,34 @@ namespace API.FB.Core.Interfaces.Repository
         /// CreatedBy: PHDUONG(27/08/2021)
         bool IsDuplicated(string entityProperty);
 
+        /// <summary>
+        /// Thêm mới user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        int Insert(User user);
+
+        /// <summary>
+        /// Sửa user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        int Update(User user);
+
+        /// <summary>
+        /// Sửa user token
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        int UpdateTokenForUser(User user);
+
+        /// <summary>
+        /// Gọi user theo token
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        User GetUserByToken(string token);
+
         #endregion
     }
 }

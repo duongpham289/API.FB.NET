@@ -8,15 +8,11 @@ using API.FB.Core.Interfaces.Repository;
 using API.FB.Core.Interfaces.Services;
 using API.FB.Core.Services;
 using API.FB.Infrastructure.Repository;
-<<<<<<< Updated upstream
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-=======
-using API.FB.Core.Interfaces.Repository;
->>>>>>> Stashed changes
 namespace Web07.FinalTest.MF960
 {
     public class Startup
@@ -56,11 +52,10 @@ namespace Web07.FinalTest.MF960
             });
 
 
-<<<<<<< Updated upstream
             //Services DI:
             services.AddScoped<IUserService, UserService>();
-=======
-            //services.AddScoped<IAuthService, AuthService>();
+
+            //Repository DI:
             services.AddScoped<IUserRepository, UserRepository>();
 
 
@@ -71,16 +66,8 @@ namespace Web07.FinalTest.MF960
 
             services.AddScoped<IPostService, PostService>();
             services.AddScoped<IPostRepo, PostRepo>();
->>>>>>> Stashed changes
 
-            //Repository DI:
-            services.AddScoped<IUserRepository, UserRepository>();
 
-<<<<<<< Updated upstream
-            //Base DI:
-            services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
-            services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-=======
             services.AddScoped(typeof(IBaseRepo<>), typeof(BaseRepo<>));
 
             services.AddScoped<ICommentRepo, CommentRepo>();
@@ -88,7 +75,9 @@ namespace Web07.FinalTest.MF960
             services.AddScoped<IPostService, PostService>();
             services.AddScoped<IPostRepo, PostRepo>();
 
->>>>>>> Stashed changes
+            //Base DI:
+            services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
+            services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
