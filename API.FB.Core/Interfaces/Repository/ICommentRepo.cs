@@ -11,6 +11,8 @@ namespace API.FB.Core.Interfaces.Repository
         /// </summary>
         /// <param name="postId"></param>
         /// <returns></returns>
-        List<Comment> GetByPostId(Guid postId);
+        List<Comment> GetByPostId(Comment comment);
+
+        List<Comment> InsertComment(Comment comment);
     }
 }

@@ -72,16 +72,16 @@ namespace API.FB.Controllers
         /// </summary>
         /// <returns></returns>
         /// CreatedBy:PHDUONG(03/09/2021)
-        [HttpGet("export")]
-        public IActionResult Export([FromQuery] int pageIndex, [FromQuery] int pageSize, [FromQuery] string employeeFilter)
-        {
+        //[HttpGet("export")]
+        //public IActionResult Export([FromQuery] int pageIndex, [FromQuery] int pageSize, [FromQuery] string employeeFilter)
+        //{
 
-            var stream = _employeeService.ExportUser(pageIndex, pageSize, employeeFilter, false);
+        //    var stream = _employeeService.ExportUser(pageIndex, pageSize, employeeFilter, false);
 
-            string excelName = $"DanhSachNhanVien.xlsx";
+        //    string excelName = $"DanhSachNhanVien.xlsx";
 
-            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
-        }
+        //    return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
+        //}
 
         /// <summary>
         /// Lấy tất cả Code

@@ -17,9 +17,9 @@ namespace API.FB.Core.Services
             _commentRepo = commentRepo;
         }
 
-        public int editComment(Guid postId)
+        public List<Comment> InsertComment(Comment comment)
         {
-            return 1;
+            return _commentRepo.InsertComment(comment);
         }
     }
 }

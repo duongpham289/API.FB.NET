@@ -3,6 +3,11 @@ using API.FB.Core.Entities;
 using API.FB.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.Extensions.Hosting;
+using System.Drawing;
+using System.IO;
 
 namespace CNWTT.Controllers
 {
@@ -14,96 +19,320 @@ namespace CNWTT.Controllers
         IPostService _postService;
         IPostRepo _postRepo;
 
-        public PostController(IPostService postService, IPostRepo postRepo) 
+        IUserRepository _userRepository;
+
+        public PostController(IPostService postService, IPostRepo postRepo, IUserRepository userRepository)
         {
             _postService = postService;
             _postRepo = postRepo;
+            _userRepository = userRepository;
         }
 
         /// <summary>
         /// Lấy tất cả Code
         /// </summary>
         /// <returns></returns>
-        ///  CreatedBy: PHDUONG(27/08/2021)
-        [HttpGet("getListPost")]
-        public virtual IActionResult GetListPost([FromQuery]Guid userID)
+        [HttpGet("get_list_post")]
+        public virtual ServiceResult GetListPost([FromQuery] Post post)
         {
+            ServiceResult result = new ServiceResult();
             try
             {
-                var entityCode = _postRepo.GetListPost(userID);
 
-                if (entityCode != null)
-                {
-                    return StatusCode(200, entityCode);
+                var token = post.Token;
+                var latestPostID = post.LatestPostID;
+                var pageCount = post.PageCount;
+                var pageIndex = post.PageIndex;
 
-                }
-                else
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
                 {
-                    return NoContent();
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
                 }
+
+                if (latestPostID == null || pageCount == null || pageIndex == null)
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+
+                var listPost = _postRepo.GetListPost(post);
+
+
+                var listDisplayPost = new List<object>();
+
+                foreach (var item in listPost)
+                {
+                    byte[] bytes = Convert.FromBase64String(item.Image);
+
+                    Image image;
+                    using (MemoryStream ms = new MemoryStream(bytes))
+                    {
+                        image = Image.FromStream(ms);
+                    }
+
+                    var temp = new
+                    {
+                        PostID = item.PostID,
+                        Described = item.Described,
+                        Created = item.CreatedDate,
+                        Modified = item.ModifiedDate,
+                        Like = item.ReactCount,
+                        Comment = item.CommentCount,
+                        Is_liked = item.Is_liked,
+                        Image = image,
+                        Author = new
+                        {
+                            AuthorID = item.Author_id,
+                            AuthorName = item.Author_name,
+                            AuthorAvatar = item.Author_avatar,
+                        },
+                        Is_blocked = item.Is_blocked
+
+                    };
+
+                    listDisplayPost.Add(temp);
+                }
+
+                result.ResponseCode = 1000;
+                result.Data = new
+                {
+                    posts = listDisplayPost,
+                    NewItems = listPost[0].NewItems,
+                    LastID = listPost[0].PostID,
+
+                };
+                result.Message = "OK";
             }
             catch (Exception ex)
             {
-                var errorObj = new
-                {
-                    devMsg = ex.Message,
-                    userMsg = "Có lỗi xấy ra vui lòng liên hệ  để được hỗ trợ",
-                    errorCode = "misa-001",
-                    moreInfo = "https://openapi.misa.com.vn/errorcode/misa-001",
-                    traceId = ""
-                };
-                return StatusCode(500, errorObj);
+                result.OnException(ex);
             }
+            return result;
+
         }
 
         /// <summary>
         /// Lấy tất cả Code
         /// </summary>
         /// <returns></returns>
-        ///  CreatedBy: PHDUONG(27/08/2021)
-        [HttpGet("getNewPost")]
-        public  IActionResult GetNewListPost([FromQuery] Guid userID, [FromQuery]int newestPostID)
+        [HttpGet("check_new_item")]
+        public ServiceResult GetNewListPost([FromQuery] Post post)
         {
+
+            ServiceResult result = new ServiceResult();
             try
             {
-                var entityCode = _postRepo.GetNewListPost(userID, newestPostID);
+                var token = post.Token;
+                var latestPostID = post.LatestPostID;
 
-                if (entityCode != null)
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
                 {
-                    return StatusCode(200, entityCode);
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
 
-                }
-                else
+                if (latestPostID == null)
                 {
-                    return NoContent();
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
                 }
+                var listPost = _postRepo.GetNewListPost(post);
+
+                var listDisplayPost = new List<object>();
+
+                foreach (var item in listPost)
+                {
+                    byte[] bytes = Convert.FromBase64String(item.Image);
+
+                    Image image;
+                    using (MemoryStream ms = new MemoryStream(bytes))
+                    {
+                        image = Image.FromStream(ms);
+                    }
+
+                    var temp = new
+                    {
+                        PostID = item.PostID,
+                        Described = item.Described,
+                        Created = item.CreatedDate,
+                        Modified = item.ModifiedDate,
+                        Like = item.ReactCount,
+                        Comment = item.CommentCount,
+                        Is_liked = item.Is_liked,
+                        image,
+                        Author = new
+                        {
+                            AuthorID = item.Author_id,
+                            AuthorName = item.Author_name,
+                            AuthorAvatar = item.Author_avatar,
+                        },
+                        Is_blocked = item.Is_blocked
+
+                    };
+
+                    listDisplayPost.Add(temp);
+                }
+
+                result.ResponseCode = 1000;
+                result.Data = new
+                {
+                    //posts = listDisplayPost,
+                    NewItems = listPost[0].NewItems,
+                    //LastID = listPost[0].PostID,
+
+                };
+                result.Message = "OK";
             }
             catch (Exception ex)
             {
-                var errorObj = new
-                {
-                    devMsg = ex.Message,
-                    userMsg = "Có lỗi xấy ra vui lòng liên hệ  để được hỗ trợ",
-                    errorCode = "misa-001",
-                    moreInfo = "https://openapi.misa.com.vn/errorcode/misa-001",
-                    traceId = ""
-                };
-                return StatusCode(500, errorObj);
+                result.OnException(ex);
             }
+            return result;
+
         }
+
         /// <summary>
-        /// Xử lí thêm mới dữ liệu
+        /// Lấy về bài viết cụ thể
         /// </summary>
-        /// <param name="entity"></param>
+        /// <param name="dic"></param>
         /// <returns></returns>
-        // POST api/<MISABaseController>
-        [HttpPost("post")]
-        public IActionResult Post([FromBody] Post entity)
+        [HttpGet("get_post")]
+        public ServiceResult GetPost([FromQuery] Post post)
         {
-            
-                var res = _postService.InsertPost(entity);
-                return StatusCode(201, res);
-            
+
+            ServiceResult result = new ServiceResult();
+            try
+            {
+                var token = post.Token;
+                var postID = post.PostID;
+
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+
+                if (postID == null)
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+
+
+                //dic.PostID = Guid.NewGuid();
+                var postResult = _postService.GetPost(post);
+
+                byte[] bytes = Convert.FromBase64String(postResult.Image);
+
+                Image image;
+                using (MemoryStream ms = new MemoryStream(bytes))
+                {
+                    image = Image.FromStream(ms);
+
+                    using (Bitmap bm2 = new Bitmap(ms))
+                    {
+                        bm2.Save("C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\" + "API_FB.jpg");
+                    }
+                }
+
+
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                result.Data = new
+                {
+                    PostID = postResult.PostID,
+                    Described = postResult.Described,
+                    Created = postResult.CreatedDate,
+                    Modified = postResult.ModifiedDate,
+                    Like = postResult.ReactCount,
+                    Comment = postResult.CommentCount,
+                    Is_liked = postResult.Is_liked,
+                    image,
+                    Author = new
+                    {
+                        AuthorID = postResult.Author_id,
+                        AuthorName = postResult.Author_name,
+                        AuthorAvatar = postResult.Author_avatar,
+                    },
+                    Is_blocked = postResult.Is_blocked,
+
+                };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
+
+        }
+
+        /// <summary>
+        /// Tạo bài viết mới
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <returns></returns>
+        [HttpPost("add_post")]
+        public ServiceResult Post([FromForm] Post post)
+        {
+
+            ServiceResult result = new ServiceResult();
+            try
+            {
+                var token = post.Token;
+                var described = post.Described;
+                var media = post.Media;
+                var status = post.Status;
+
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+
+                if (String.IsNullOrWhiteSpace(described) || String.IsNullOrWhiteSpace(token))
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+
+                if (described?.Length > 65.535)
+                {
+                    result.ResponseCode = 1006;
+                    result.Message = "Độ dài đầu vào quá mức cho phép";
+                    return result;
+                }
+
+
+                //dic.PostID = Guid.NewGuid();
+                var postID = _postService.InsertPost(post);
+
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                result.Data = new { PostID = postID };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
+
         }
 
         /// <summary>
@@ -114,12 +343,52 @@ namespace CNWTT.Controllers
         /// <returns></returns>
         // PUT api/<MISABaseController>/5
         [HttpPut("edit_post")]
-        public virtual IActionResult Put([FromQuery] Guid entityId, [FromBody] Post entity)
+        public ServiceResult Put([FromQuery] Post post)
         {
-            
-                var res = _postService.UpdatePost(entityId, entity);
-                return StatusCode(200, res);
-            
+            ServiceResult result = new ServiceResult();
+            try
+            {
+                var token = post.Token;
+                var postID = post.PostID;
+                var described = post.Described;
+                var media = post.Media;
+                var status = post.Status;
+
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+
+                if (String.IsNullOrWhiteSpace(described) || postID == null)
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+
+
+                if (described?.Length > 65.535)
+                {
+                    result.ResponseCode = 1006;
+                    result.Message = "Độ dài đầu vào quá mức cho phép";
+                    return result;
+                }
+
+                _postService.UpdatePost(post);
+
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
+
         }
 
         /// <summary>
@@ -128,55 +397,137 @@ namespace CNWTT.Controllers
         /// <param name="entityId"> Id của đối tượng </param>
         /// <returns></returns>
         [HttpDelete("delete_post")]
-        public virtual IActionResult Delete([FromQuery] Guid entityId)
+        public ServiceResult Delete([FromQuery] Post post)
         {
-            
-                var res = _postService.DeletePost(entityId);
-                return StatusCode(200, res);
-            
+            ServiceResult result = new ServiceResult();
+
+            try
+            {
+                var token = post.Token;
+                var postID = post.PostID.ToString();
+
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+
+                if (String.IsNullOrWhiteSpace(postID))
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+
+
+                var serviceResult = _postRepo.DeletePost(post);
+
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+
+            }
+            return result;
+
         }
 
-        [HttpGet("like")]
-        public IActionResult Like(Guid postID)
+        /// <summary>
+        /// Controller like
+        /// </summary>
+        /// <param name="react"></param>
+        /// <returns></returns>
+        [HttpPost("react_post")]
+        public ServiceResult LikeStatusChanged([FromQuery] React react)
         {
-            var res = _postService.Like(postID);
-            return StatusCode(200, res);
+            ServiceResult result = new ServiceResult();
+            try
+            {
 
+                var token = react.Token;
+                var postID = react.PostID.ToString();
+
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
+
+                if (String.IsNullOrWhiteSpace(postID))
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
+                //react.ReactID = Guid.NewGuid();
+                var likeCount = _postService.React(react);
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                result.Data = new
+                {
+                    LikeCount = likeCount
+                };
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
         }
 
 
-        [HttpPost("react")]
-        public IActionResult LikeStatusChanged(Guid userID, [FromQuery] Guid postID, int status)
+        [HttpPost("report_post")]
+        public ServiceResult ReportPost([FromQuery] Report report)
         {
-            var res = 0;
+            ServiceResult result = new ServiceResult();
+            try
+            {
+                var token = report.Token;
+                var postID = report.PostID;
+                var details = report.Details;
+                var subject = report.Subject;
 
-            //Like like = new Like()
-            //{
-            //    PostID = postID,
-            //    UserID = userID,
-            //};
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.ResponseCode = 1009;
+                    result.Message = "Không có quyền truy cập tài nguyên";
+                    return result;
+                }
 
-            // unlike
-            //if (status == 0)
-            //{
-            //    res = _likeRepo.DeleteCustom(userID, postID);
-            //}
-            //else
-            //{
-            //    res = _likeService.InsertService(like);
-            //}
+                if (String.IsNullOrWhiteSpace(details) || String.IsNullOrWhiteSpace(subject) || postID == null)
+                {
+                    result.ResponseCode = 1002;
+                    result.Message = "Số lượng Parameter không đầy đủ";
+                    return result;
+                }
 
-            return Ok(res);
+                if (subject.Length > 255 || details.Length > 65.535)
+                {
+                    result.ResponseCode = 1006;
+                    result.Message = "Độ dài đầu vào quá mức cho phép";
+                    return result;
+                }
 
-        }
+                _postService.ReportPost(report);
 
-
-        [HttpGet("report")]
-        public IActionResult ReportPost([FromQuery] Guid postId)
-        {
-
-            var res = _postService.ReportPost(postId);
-            return Ok(res);
+                result.ResponseCode = 1000;
+                result.Message = "OK";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
 
         }
     }

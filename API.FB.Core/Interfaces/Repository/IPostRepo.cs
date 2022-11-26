@@ -12,12 +12,24 @@ namespace API.FB.Core.Interfaces.Repository
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: PHDUONG
-        List<Post> GetListPost(Guid userID);
+        List<Post> GetListPost(Post post);
         /// <summary>
         /// Lấy tất cả Post
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: PHDUONG
-        List<Post> GetNewListPost(Guid userID, int newestPostID);
+        List<Post> GetNewListPost(Post post);
+
+        int DeletePost(Post post);
+
+        int UpdatePost(Post post);
+        int InsertPost(Post post);
+
+        Post GetPost(Post post);
+
+        int ReportPost(Report report);
+
+        int ReactPost(React react);
+
     }
 }

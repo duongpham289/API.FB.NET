@@ -12,29 +12,34 @@ namespace API.FB.Core.Services
     public class PostService : IPostService
     {
         IPostRepo _postRepo;
-        public PostService(IPostRepo postRepo) 
+        public PostService(IPostRepo postRepo)
         {
             _postRepo = postRepo;
         }
+
+        public Post GetPost(Post post)
+        {
+            return _postRepo.GetPost(post);
+        }
+
         public int InsertPost(Post post)
         {
-            return 1;
+            return _postRepo.InsertPost(post);
         }
 
-        public int UpdatePost(Guid postId, Post post)
+        public int UpdatePost(Post post)
         {
-               return -1;
+            return _postRepo.UpdatePost(post);
         }
 
-        public int DeletePost(Guid postId) { return 0; }
 
         public List<Post> GetPostList() { return new List<Post>(); }
-        public int Like(Guid postId) { return 0;}
+        public int React(React react) { return _postRepo.ReactPost(react); }
 
 
-        public bool ReportPost(Guid postId)
+        public int ReportPost(Report report)
         {
-            return true;
+            return _postRepo.ReportPost(report);
         }
     }
 }
