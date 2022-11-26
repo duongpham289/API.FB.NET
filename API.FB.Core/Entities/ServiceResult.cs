@@ -14,13 +14,13 @@ namespace API.FB.Core.Entities
         /// Hợp lệ 
         /// </summary>
         /// CreatedBY: PHDUONG
-        public bool IsValid { get; set; } = true;
+        public int ResponseCode { get; set; }
 
         /// <summary>
-        /// Hợp lệ 
+        /// Thông tin đi kèm
         /// </summary>
         /// CreatedBY: PHDUONG
-        public int ResponseCode { get; set; }
+        public string Message { get; set; }
 
         /// <summary>
         /// Dữ liệu trả về
@@ -28,11 +28,19 @@ namespace API.FB.Core.Entities
         /// CreatedBY: PHDUONG
         public object Data { get; set; }
 
-        /// <summary>
-        /// Thông tin đi kèm
-        /// </summary>
-        /// CreatedBY: PHDUONG
-        public string Message { get; set; }
+
+
+        public ServiceResult OnException(Exception ex)
+        {
+            if (ex != null)
+            {
+                this.ResponseCode = 9999;
+                this.Message = "Lỗi Exception " + ex.Message;
+
+            }
+
+            return this;
+        }
         #endregion
     }
 }

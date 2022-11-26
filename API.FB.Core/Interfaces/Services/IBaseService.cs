@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace API.FB.Core.Interfaces.Services
 {
-    public interface IBaseService<MISAEntity>
+    public interface IBaseService<FBEntity>
     {
         #region Methods
 
@@ -17,7 +17,7 @@ namespace API.FB.Core.Interfaces.Services
         /// <param name="entity">Dữ liệu truyền vào</param>
         /// <returns></returns>
         /// CreatedBy: PHDUONG(27/08/2021)
-        ServiceResult Add(MISAEntity entity);
+        int InsertService(FBEntity entity);
 
         /// <summary>
         /// Sửa dữ liệu trong DataBase
@@ -25,7 +25,7 @@ namespace API.FB.Core.Interfaces.Services
         /// <param name="entity">Dữ liệu truyền vào</param>
         /// <returns></returns>
         /// CreatedBy: PHDUONG(27/08/2021)
-        ServiceResult Update(MISAEntity entity, Guid entityId);
+        int UpdateService(Guid entityId, FBEntity entity);
         #endregion
     }
 }
