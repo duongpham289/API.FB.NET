@@ -12,5 +12,6 @@ namespace API.FB.Core.Interfaces.Services
     {
         public ServiceResult ValidateBeforeRepo(ServiceResult result, string token, string described, List<IFormFile> imageList, List<IFormFile> video);
 
+        public ServiceResult ValidateFile(ServiceResult result, Post post);
     }
 }

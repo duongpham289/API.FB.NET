@@ -1,6 +1,7 @@
 ﻿using API.FB.Core.Interfaces.Repository;
 using API.FB.Core.Entities;
 using API.FB.Core.Interfaces.Services;
+using API.FB.Core.FBAttribute;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -46,6 +47,10 @@ namespace CNWTT.Controllers
                 var imageList = post.Image;
                 var video = post.Video;
                 var status = post.Status;
+
+                var properties = typeof(Post).GetProperties();
+
+                result = _postService.ValidateFile(result: result, post: post);
 
                 result = _postService.ValidateBeforeRepo(result: result, token: token, described: described, imageList: imageList, video: video);
 
@@ -109,58 +114,61 @@ namespace CNWTT.Controllers
                 List<Image> imageList = new List<Image>();
                 List<string> videoList = new List<string>();
 
-
-                if ((bool)postMedia[0].IsImage)
+                if (postMedia.Count > 0)
                 {
-                    int index = 0;
-                    foreach (var media in postMedia)
+                    if ((bool)postMedia[0].IsImage)
                     {
-                        byte[] bytes = Convert.FromBase64String(media.Image);
+                        int index = 0;
+                        foreach (var media in postMedia)
+                        {
+                            byte[] bytes = Convert.FromBase64String(media.Image);
 
+                            try
+                            {
+                                using (MemoryStream ms = new MemoryStream(bytes))
+                                {
+                                    var image = Image.FromStream(ms);
+
+
+                                    using (Bitmap bm2 = new Bitmap(ms))
+                                    {
+                                        bm2.Save(path + "PostID_" + postResult[0].PostID + "_Image_" + index + ".jpg");
+                                    }
+
+                                    imageList.Add(image);
+
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                result.OnException(ex);
+                            }
+                            index++;
+                        }
+
+
+                    }
+                    else
+                    {
                         try
                         {
-                            using (MemoryStream ms = new MemoryStream(bytes))
+                            FileInfo video = new FileInfo(path + "PostID_" + postResult[0].PostID + "_Video.mp4");
+                            byte[] bytes = Convert.FromBase64String(postMedia[0].Video);
+
+                            using (Stream sw = video.OpenWrite())
                             {
-                                var image = Image.FromStream(ms);
-
-
-                                using (Bitmap bm2 = new Bitmap(ms))
-                                {
-                                    bm2.Save(path + "PostID_" + postResult[0].PostID + "_Image_" + index + ".jpg");
-                                }
-
-                                imageList.Add(image);
-
+                                sw.Write(bytes, 0, bytes.Length);
+                                sw.Close();
                             }
+
+                            videoList.Add(video.FullName);
                         }
                         catch (Exception ex)
                         {
                             result.OnException(ex);
                         }
-                        index++;
                     }
 
-
-                }
-                else
-                {
-                    try
-                    {
-                        FileInfo video = new FileInfo(path + "PostID_" + postResult[0].PostID + "_Video.mp4");
-                        byte[] bytes = Convert.FromBase64String(postMedia[0].Video);
-
-                        using (Stream sw = video.OpenWrite())
-                        {
-                            sw.Write(bytes, 0, bytes.Length);
-                            sw.Close();
-                        }
-
-                        videoList.Add(video.FullName);
-                    }
-                    catch (Exception ex)
-                    {
-                        result.OnException(ex);
-                    }
                 }
 
 
@@ -227,7 +235,9 @@ namespace CNWTT.Controllers
                     return result;
                 }
 
-                _postService.ValidateBeforeRepo(result: result, token: token, described: described, imageList: imageList, video: video);
+                result = _postService.ValidateFile(result: result, post: post);
+
+                result = _postService.ValidateBeforeRepo(result: result, token: token, described: described, imageList: imageList, video: video);
 
                 if (result.ResponseCode != 0)
                 {
