@@ -127,7 +127,7 @@ namespace API.FB.Infrastructure.Repository
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public Guid Insert(User user)
+        public string Insert(User user)
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
@@ -137,7 +137,7 @@ namespace API.FB.Infrastructure.Repository
                 parameters.Add("@v_username", user.FullName);
                 parameters.Add("@v_avatar", user.Avatar);
 
-                var data = _dbConnection.QueryFirstOrDefault<Guid>($"Proc_InsertUser", param: parameters, commandType: CommandType.StoredProcedure);
+                var data = _dbConnection.QueryFirstOrDefault<string>($"Proc_InsertUser", param: parameters, commandType: CommandType.StoredProcedure);
 
                 return data;
             }
