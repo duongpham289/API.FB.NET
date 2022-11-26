@@ -32,5 +32,7 @@ namespace API.FB.Core.Interfaces.Repository
         int ReactPost(React react);
 
         bool GetPermissionPostAction(Post post);
+
+        bool CheckPostExist(int? postID);
     }
 }

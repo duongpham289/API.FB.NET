@@ -16,6 +16,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -80,6 +81,13 @@ namespace Api.fb.Controllers
                 }
                 else
                 {
+                    if (user.Password == user.PhoneNumber || !Regex.Match(user.PhoneNumber, @"\b(0[3|5|7|8|9])+([0-9]{8})\b").Success)
+                    {
+                        result.ResponseCode = 1004;
+                        result.Message = "Giá trị tham số không hợp lệ";
+                        return result;
+                    }
+
                     // Thêm mới người dùng
                     var userID = _userRepository.Insert(user);
 
@@ -121,6 +129,12 @@ namespace Api.fb.Controllers
                     return result;
                 }
 
+                if (auth.Password == auth.PhoneNumber || !Regex.Match(auth.PhoneNumber, @"\b(0[3|5|7|8|9])+([0-9]{8})\b").Success)
+                {
+                    result.ResponseCode = 1004;
+                    result.Message = "Giá trị tham số không hợp lệ";
+                    return result;
+                }
                 // Kiểm tra user
                 var user = AuthenticateUser(auth);
 

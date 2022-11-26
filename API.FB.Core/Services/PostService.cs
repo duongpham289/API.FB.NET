@@ -78,8 +78,6 @@ namespace API.FB.Core.Services
                 }
             }
 
-
-
             return result;
         }
 

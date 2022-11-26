@@ -26,7 +26,7 @@ namespace API.FB.Core.Entities
         public List<IFormFile>? Video { get; set; }
 
         [DataType(DataType.Upload)]
-        [MaxFileSize(5 * 1024 * 1024)] // 5MB
+        [MaxFileSize(1 * 1024 * 1024)] // 1MB
         [AllowedExtensions(new string[] { ".jpg", ".png" })]
         public List<IFormFile>? Image { get; set; }
         public string? ListImageDelete { get; set; }

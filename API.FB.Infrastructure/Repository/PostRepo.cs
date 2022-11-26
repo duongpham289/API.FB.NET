@@ -303,5 +303,16 @@ namespace API.FB.Infrastructure.Repository
                 return data == 1 ? true : false;
             }
         }
+
+        public bool CheckPostExist(int? postID)
+        {
+            using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@v_postID", postID);
+                var data = _dbConnection.QueryFirstOrDefault<int>($"Proc_CheckPostExist", param: parameters, commandType: CommandType.StoredProcedure);
+                return data == 1 ? true : false;
+            }
+        }
     }
 }

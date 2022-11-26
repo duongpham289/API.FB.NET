@@ -109,7 +109,7 @@ namespace CNWTT.Controllers
                     return result;
                 }
 
-                string path = "C:\\Users\\20187315\\Desktop\\Pic\\";
+                string path = "C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\";
 
                 List<Image> imageList = new List<Image>();
                 List<string> videoList = new List<string>();
@@ -421,6 +421,14 @@ namespace CNWTT.Controllers
                     return result;
                 }
 
+                bool postExist = _postRepo.CheckPostExist(postID);
+                if (!postExist)
+                {
+                    result.ResponseCode = 9992;
+                    result.Message = "Bài viết không tồn tại";
+                    return result;
+                }
+
                 _postRepo.ReportPost(report);
 
                 result.ResponseCode = 1000;
@@ -489,7 +497,7 @@ namespace CNWTT.Controllers
 
                 foreach (var item in postResult)
                 {
-                    string path = "C:\\Users\\20187315\\Desktop\\Pic\\";
+                    string path = "C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\";
 
                     List<Image> imageList = new List<Image>();
                     List<string> videoList = new List<string>();
@@ -642,7 +650,7 @@ namespace CNWTT.Controllers
 
                 foreach (var item in postResult)
                 {
-                    string path = "C:\\Users\\20187315\\Desktop\\Pic\\";
+                    string path = "C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\";
 
                     List<Image> imageList = new List<Image>();
                     List<string> videoList = new List<string>();
