@@ -26,30 +26,30 @@ namespace API.FB.Core.Services
             if (token == null)
             {
 
-                result.ResponseCode = 9998;
-                result.Message = "Sai token";
+                result.code = "9998";
+                result.message = "Token is invalid";
                 return result;
             }
 
             User user = _userRepository.GetUserByToken(token);
             if (user == null)
             {
-                result.ResponseCode = 1009;
-                result.Message = "Không có quyền truy cập tài nguyên";
+                result.code = "1009";
+                result.message = "Not access";
                 return result;
             }
 
             if (String.IsNullOrWhiteSpace(described))
             {
-                result.ResponseCode = 1002;
-                result.Message = "Số lượng Parameter không đầy đủ";
+                result.code = "1002";
+                result.message = "Parameter is not enough";
                 return result;
             }
 
             if (described?.Length > 65.535)
             {
-                result.ResponseCode = 1006;
-                result.Message = "Độ dài đầu vào quá mức cho phép";
+                result.code = "1006";
+                result.message = "Parameter value is invalid";
                 return result;
             }
 
@@ -57,14 +57,14 @@ namespace API.FB.Core.Services
             {
                 if (video != null)
                 {
-                    result.ResponseCode = 1007;
-                    result.Message = "Upload thất bại, chỉ được upload ảnh hoặc video";
+                    result.code = "1007";
+                    result.message = "Upload File Failed!";
                     return result;
                 }
-                else if (imageList.Count > 5)
+                else if (imageList.Count > 4)
                 {
-                    result.ResponseCode = 1008;
-                    result.Message = "Số lượng ảnh vượt quá quy định";
+                    result.code = "1008";
+                    result.message = "Maximum number of images";
                     return result;
                 }
             }
@@ -72,8 +72,8 @@ namespace API.FB.Core.Services
             {
                 if (video.Count > 1)
                 {
-                    result.ResponseCode = 1008;
-                    result.Message = "Số lượng video vượt quá quy định";
+                    result.code = "1008";
+                    result.message = "Maximum number of images";
                     return result;
                 }
             }
@@ -104,8 +104,8 @@ namespace API.FB.Core.Services
                                 var message = (propExtension[0] as AllowedExtensionsAttribute).IsValid(image);
                                 if (!message)
                                 {
-                                    result.ResponseCode = 1007;
-                                    result.Message = "Upload thất bại, định dạng file không hợp lệ";
+                                    result.code = "1007";
+                                    result.message = "Upload File Failed!";
                                     return result;
                                 }
                             }
@@ -126,8 +126,8 @@ namespace API.FB.Core.Services
                                 var message = (propExtension[0] as AllowedExtensionsAttribute).IsValid(propVid);
                                 if (!message)
                                 {
-                                    result.ResponseCode = 1007;
-                                    result.Message = "Upload thất bại, định dạng file không hợp lệ";
+                                    result.code = "1007";
+                                    result.message = "Upload File Failed!";
                                     return result;
                                 }
                             }
@@ -152,8 +152,8 @@ namespace API.FB.Core.Services
                                 var message = (propMaxSize[0] as MaxFileSizeAttribute).IsValid(image);
                                 if (!message)
                                 {
-                                    result.ResponseCode = 1006;
-                                    result.Message = "Cỡ file vượt mức cho phép";
+                                    result.code = "1006";
+                                    result.message = "File size is too big";
                                     return result;
                                 }
                             }
@@ -173,8 +173,8 @@ namespace API.FB.Core.Services
                                 var message = (propMaxSize[0] as MaxFileSizeAttribute).IsValid(propVid);
                                 if (!message)
                                 {
-                                    result.ResponseCode = 1007;
-                                    result.Message = "Cỡ file vượt mức cho phép";
+                                    result.code = "1007";
+                                    result.message = "File size is too big";
                                     return result;
                                 }
                             }

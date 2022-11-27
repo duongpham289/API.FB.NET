@@ -14,19 +14,19 @@ namespace API.FB.Core.Entities
         /// Hợp lệ 
         /// </summary>
         /// CreatedBY: PHDUONG
-        public int ResponseCode { get; set; }
+        public string code { get; set; }
 
         /// <summary>
         /// Thông tin đi kèm
         /// </summary>
         /// CreatedBY: PHDUONG
-        public string Message { get; set; }
+        public string message { get; set; }
 
         /// <summary>
         /// Dữ liệu trả về
         /// </summary>
         /// CreatedBY: PHDUONG
-        public object Data { get; set; }
+        public object data { get; set; }
 
 
 
@@ -34,8 +34,8 @@ namespace API.FB.Core.Entities
         {
             if (ex != null)
             {
-                this.ResponseCode = 9999;
-                this.Message = "Lỗi Exception " + ex.Message;
+                this.code = "9999";
+                this.message = "Lỗi Exception " + ex.Message;
 
             }
 

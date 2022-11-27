@@ -45,7 +45,7 @@ namespace Api.fb.Controllers
         /// <param name="entity"></param>
         /// <returns></returns>
         /// lttuan1
-        [HttpPost("sign_up")]
+        [HttpPost("signup")]
         public ServiceResult Signup([FromForm] User user)
         {
             ServiceResult result = new ServiceResult();
@@ -54,8 +54,8 @@ namespace Api.fb.Controllers
 
                 if (String.IsNullOrWhiteSpace(user.PhoneNumber))
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
@@ -67,14 +67,14 @@ namespace Api.fb.Controllers
                 {
                     if (String.IsNullOrWhiteSpace(user.Password))
                     {
-                        result.ResponseCode = 1002;
-                        result.Message = "Số lượng Parameter không đầy đủ";
+                        result.code = "1002";
+                        result.message = "Parameter is not enough";
                         return result;
                     }
                     else
                     {
-                        result.ResponseCode = 9996;
-                        result.Message = "Người dùng đã tồn tại";
+                        result.code = "9996";
+                        result.message = "User existed";
                         return result;
 
                     }
@@ -83,8 +83,8 @@ namespace Api.fb.Controllers
                 {
                     if (user.Password == user.PhoneNumber || !Regex.Match(user.PhoneNumber, @"\b(0[3|5|7|8|9])+([0-9]{8})\b").Success)
                     {
-                        result.ResponseCode = 1004;
-                        result.Message = "Giá trị tham số không hợp lệ";
+                        result.code = "1004";
+                        result.message = "Paramerter value is invalid";
                         return result;
                     }
 
@@ -92,14 +92,14 @@ namespace Api.fb.Controllers
                     var userID = _userRepository.Insert(user);
 
                     // Trả về result
-                    result.Data = new
+                    result.data = new
                     {
-                        UserID = userID,
-                        UserName = user.FullName,
+                        id = userID,
+                        username = user.FullName,
                     };
 
-                    result.ResponseCode = 1000;
-                    result.Message = "OK";
+                    result.code = "1000";
+                    result.message = "OK";
                     return result;
                 }
             }
@@ -116,7 +116,7 @@ namespace Api.fb.Controllers
         /// <param name="user"></param>
         /// <returns></returns>
         //POST api/<AuthController>
-        [HttpPost("log_in")]
+        [HttpPost("login")]
         public async Task<ServiceResult> Login([FromForm] Auth auth)
         {
             ServiceResult result = new ServiceResult();
@@ -124,15 +124,15 @@ namespace Api.fb.Controllers
             {
                 if (String.IsNullOrWhiteSpace(auth.Password) || String.IsNullOrWhiteSpace(auth.PhoneNumber))
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
                 if (auth.Password == auth.PhoneNumber || !Regex.Match(auth.PhoneNumber, @"\b(0[3|5|7|8|9])+([0-9]{8})\b").Success)
                 {
-                    result.ResponseCode = 1004;
-                    result.Message = "Giá trị tham số không hợp lệ";
+                    result.code = "1004";
+                    result.message = "Paramerter value is invalid";
                     return result;
                 }
                 // Kiểm tra user
@@ -140,14 +140,14 @@ namespace Api.fb.Controllers
 
                 if (user == null)
                 {
-                    result.ResponseCode = 9995;
-                    result.Message = "Không có người dùng này";
+                    result.code = "9995";
+                    result.message = "User is not validated";
                     return result;
                 }
                 else if (!String.IsNullOrWhiteSpace(user.Token))
                 {
-                    result.ResponseCode = 1010;
-                    result.Message = "Hành động đã được người dùng thực hiện trước đây";
+                    result.code = "1010";
+                    result.message = "Action has been done previously by this user";
                     return result;
 
                 }
@@ -165,9 +165,13 @@ namespace Api.fb.Controllers
                 // Update token cho user
                 _userRepository.UpdateTokenForUser(user);
 
-                result.Data = new { user.UserID, user.FullName, Token = tokenString, user.Avatar };
-                result.ResponseCode = 1000;
-                result.Message = "OK";
+                result.data = new { 
+                    id = user.UserID, 
+                    username = user.FullName, 
+                    token = tokenString, 
+                    avatar = user.Avatar };
+                result.code = "1000";
+                result.message = "OK";
             }
             catch (Exception ex)
             {
@@ -218,7 +222,7 @@ namespace Api.fb.Controllers
         /// 
         /// </summary>
         /// <returns></returns>
-        [HttpGet("log_out")]
+        [HttpGet("logout")]
         public async Task<ServiceResult> LogOut([FromForm] string token)
         {
             ServiceResult result = new ServiceResult();
@@ -227,8 +231,8 @@ namespace Api.fb.Controllers
                 if (token == null)
                 {
 
-                    result.ResponseCode = 9998;
-                    result.Message = "Sai token";
+                    result.code = "9998";
+                    result.message = "Token is invalid";
                     return result;
                 }
 
@@ -236,15 +240,15 @@ namespace Api.fb.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
                 else if (user.Token != token)
                 {
 
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
@@ -252,8 +256,8 @@ namespace Api.fb.Controllers
 
                 // Update token cho user
                 _userRepository.UpdateTokenForUser(user);
-                result.ResponseCode = 1000;
-                result.Message = "OK";
+                result.code = "1000";
+                result.message = "OK";
                 return result;
             }
             catch (Exception ex)

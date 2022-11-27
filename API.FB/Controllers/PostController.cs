@@ -54,16 +54,16 @@ namespace CNWTT.Controllers
 
                 result = _postService.ValidateBeforeRepo(result: result, token: token, described: described, imageList: imageList, video: video);
 
-                if (result.ResponseCode != 0)
+                if (!String.IsNullOrWhiteSpace(result.code))
                 {
                     return result;
                 }
 
                 var postID = _postRepo.InsertPost(post);
 
-                result.ResponseCode = 1000;
-                result.Message = "OK";
-                result.Data = new { PostID = postID };
+                result.code = "1000";
+                result.message = "OK";
+                result.data = new { id = postID.ToString() };
 
                 return result;
             }
@@ -92,7 +92,7 @@ namespace CNWTT.Controllers
 
                 _postService.ValidateBeforeRepo(result: result, token: token, described: "hello", imageList: null, video: null);
 
-                if (result.ResponseCode != 0)
+                if (!String.IsNullOrWhiteSpace(result.code))
                 {
                     return result;
                 }
@@ -104,8 +104,8 @@ namespace CNWTT.Controllers
 
                 if (postResult.Count <= 0)
                 {
-                    result.ResponseCode = 9992;
-                    result.Message = "Bài viết khồng tồn tại";
+                    result.code = "9992";
+                    result.message = "Post is not existed";
                     return result;
                 }
 
@@ -172,26 +172,26 @@ namespace CNWTT.Controllers
                 }
 
 
-                result.ResponseCode = 1000;
-                result.Message = "OK";
-                result.Data = new
+                result.code = "1000";
+                result.message = "OK";
+                result.data = new
                 {
-                    PostID = postResult[0].PostID,
-                    Described = postResult[0].Described,
-                    Created = postResult[0].CreatedDate,
-                    Modified = postResult[0].ModifiedDate,
-                    Like = postResult[0].ReactCount,
-                    Comment = postResult[0].CommentCount,
-                    Is_liked = postResult[0].Is_liked,
-                    Image = imageList,
-                    Video = videoList,
-                    Author = new
+                    id = postResult[0].PostID,
+                    described = postResult[0].Described,
+                    created = postResult[0].CreatedDate,
+                    modified = postResult[0].ModifiedDate,
+                    like = postResult[0].ReactCount,
+                    comment = postResult[0].CommentCount,
+                    is_liked = postResult[0].Is_liked,
+                    image = imageList,
+                    video = videoList,
+                    author = new
                     {
-                        AuthorID = postResult[0].Author_id,
-                        AuthorName = postResult[0].Author_name,
-                        AuthorAvatar = postResult[0].Author_avatar,
+                        authorid = postResult[0].Author_id,
+                        authorname = postResult[0].Author_name,
+                        authoravatar = postResult[0].Author_avatar,
                     },
-                    Is_blocked = postResult[0].Is_blocked,
+                    is_blocked = postResult[0].Is_blocked,
 
                 };
 
@@ -230,8 +230,8 @@ namespace CNWTT.Controllers
                 bool permission = _postRepo.GetPermissionPostAction(post);
                 if (!permission)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
@@ -239,22 +239,22 @@ namespace CNWTT.Controllers
 
                 result = _postService.ValidateBeforeRepo(result: result, token: token, described: described, imageList: imageList, video: video);
 
-                if (result.ResponseCode != 0)
+                if (String.IsNullOrWhiteSpace(result.code))
                 {
                     return result;
                 }
 
                 if (postID == null)
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
                 _postRepo.UpdatePost(post);
 
-                result.ResponseCode = 1000;
-                result.Message = "OK";
+                result.code = "1000";
+                result.message = "OK";
                 return result;
             }
             catch (Exception ex)
@@ -283,38 +283,38 @@ namespace CNWTT.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
                 else if (user.Token != token)
                 {
 
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
                 bool permission = _postRepo.GetPermissionPostAction(post);
                 if (!permission)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
                 if (postID == null)
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
 
                 var serviceResult = _postRepo.DeletePost(post);
 
-                result.ResponseCode = 1000;
-                result.Message = "OK";
+                result.code = "1000";
+                result.message = "OK";
                 return result;
             }
             catch (Exception ex)
@@ -331,7 +331,7 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <param name="react"></param>
         /// <returns></returns>
-        [HttpPost("react_post")]
+        [HttpPost("like")]
         public ServiceResult LikeStatusChanged([FromForm] React react)
         {
             ServiceResult result = new ServiceResult();
@@ -344,32 +344,32 @@ namespace CNWTT.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
                 else if (user.Token != token)
                 {
 
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
                 if (String.IsNullOrWhiteSpace(postID))
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
                 var likeCount = _postRepo.ReactPost(react);
 
-                result.ResponseCode = 1000;
-                result.Message = "OK";
-                result.Data = new
+                result.code = "1000";
+                result.message = "OK";
+                result.data = new
                 {
-                    LikeCount = likeCount
+                    like = likeCount
                 };
                 return result;
             }
@@ -395,44 +395,44 @@ namespace CNWTT.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
                 else if (user.Token != token)
                 {
 
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
                 if (String.IsNullOrWhiteSpace(details) || String.IsNullOrWhiteSpace(subject) || postID == null)
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
                 if (subject.Length > 255 || details.Length > 65.535)
                 {
-                    result.ResponseCode = 1006;
-                    result.Message = "Độ dài đầu vào quá mức cho phép";
+                    result.code = "1006";
+                    result.message = "Parameter value is invalid";
                     return result;
                 }
 
                 bool postExist = _postRepo.CheckPostExist(postID);
                 if (!postExist)
                 {
-                    result.ResponseCode = 9992;
-                    result.Message = "Bài viết không tồn tại";
+                    result.code = "9992";
+                    result.message = "Post is not existed";
                     return result;
                 }
 
                 _postRepo.ReportPost(report);
 
-                result.ResponseCode = 1000;
-                result.Message = "OK";
+                result.code = "1000";
+                result.message = "OK";
                 return result;
             }
             catch (Exception ex)
@@ -444,7 +444,7 @@ namespace CNWTT.Controllers
         }
 
         /// <summary>
-        /// Lấy tất cả Code
+        /// Lấy tất cả code
         /// </summary>
         /// <returns></returns>
         [HttpGet("get_list_post")]
@@ -456,28 +456,28 @@ namespace CNWTT.Controllers
 
                 var token = post.Token;
                 var latestPostID = post.last_id;
-                var pageCount = post.PageCount;
-                var pageIndex = post.PageIndex;
+                var pageCount = post.count;
+                var pageIndex = post.index;
 
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
                 else if (user.Token != token)
                 {
 
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
                 if (latestPostID == null || pageCount == null || pageIndex == null)
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
@@ -488,8 +488,8 @@ namespace CNWTT.Controllers
 
                 if (postResult.Count <= 0)
                 {
-                    result.ResponseCode = 9992;
-                    result.Message = "Bài viết khồng tồn tại";
+                    result.code = "9992";
+                    result.message = "Post is not existed";
                     return result;
                 }
 
@@ -559,37 +559,37 @@ namespace CNWTT.Controllers
 
                     var temp = new
                     {
-                        PostID = item.PostID,
-                        Described = item.Described,
-                        Created = item.CreatedDate,
-                        Modified = item.ModifiedDate,
-                        Like = item.ReactCount,
-                        Comment = item.CommentCount,
-                        Is_liked = item.Is_liked,
-                        Image = imageList,
-                        Video = videoList,
-                        Author = new
+                        id = item.PostID,
+                        described = item.Described,
+                        created = item.CreatedDate,
+                        modified = item.ModifiedDate,
+                        like = item.ReactCount,
+                        comment = item.CommentCount,
+                        is_liked = (bool)item.Is_liked ? "1" : "0",
+                        image = imageList,
+                        video = videoList,
+                        author = new
                         {
-                            AuthorID = item.Author_id,
-                            AuthorName = item.Author_name,
-                            AuthorAvatar = item.Author_avatar,
+                            id = item.Author_id,
+                            username = item.Author_name,
+                            avatar = item.Author_avatar,
                         },
-                        Is_blocked = item.Is_blocked,
+                        is_blocked = (bool)item.Is_blocked ? "1" : "0",
 
                     };
 
                     listDisplayPost.Add(temp);
                 }
 
-                result.ResponseCode = 1000;
-                result.Data = new
+                result.code = "1000";
+                result.data = new
                 {
                     posts = listDisplayPost,
                     NewItems = postResult[0].NewItems,
                     LastID = postResult[0].PostID,
 
                 };
-                result.Message = "OK";
+                result.message = "OK";
             }
             catch (Exception ex)
             {
@@ -600,7 +600,7 @@ namespace CNWTT.Controllers
         }
 
         /// <summary>
-        /// Lấy tất cả Code
+        /// Lấy tất cả code
         /// </summary>
         /// <returns></returns>
         [HttpGet("check_new_item")]
@@ -616,21 +616,21 @@ namespace CNWTT.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
                 else if (user.Token != token)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
                 if (latestPostID == null)
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
@@ -641,8 +641,8 @@ namespace CNWTT.Controllers
 
                 if (postResult.Count <= 0)
                 {
-                    result.ResponseCode = 9992;
-                    result.Message = "Bài viết khồng tồn tại";
+                    result.code = "9992";
+                    result.message = "Post is not existed";
                     return result;
                 }
 
@@ -712,37 +712,37 @@ namespace CNWTT.Controllers
 
                     var temp = new
                     {
-                        PostID = item.PostID,
-                        Described = item.Described,
-                        Created = item.CreatedDate,
-                        Modified = item.ModifiedDate,
-                        Like = item.ReactCount,
-                        Comment = item.CommentCount,
-                        Is_liked = item.Is_liked,
-                        Image = imageList,
-                        Video = videoList,
-                        Author = new
+                        id = item.PostID,
+                        described = item.Described,
+                        created = item.CreatedDate,
+                        modified = item.ModifiedDate,
+                        like = item.ReactCount,
+                        comment = item.CommentCount,
+                        is_liked = (bool)item.Is_liked ? "1" : "0",
+                        image = imageList,
+                        video = videoList,
+                        author = new
                         {
-                            AuthorID = item.Author_id,
-                            AuthorName = item.Author_name,
-                            AuthorAvatar = item.Author_avatar,
+                            id = item.Author_id,
+                            username = item.Author_name,
+                            avatar = item.Author_avatar,
                         },
-                        Is_blocked = item.Is_blocked,
+                        is_blocked = (bool)item.Is_blocked ? "1" : "0",
 
                     };
 
                     listDisplayPost.Add(temp);
                 }
 
-                result.ResponseCode = 1000;
-                result.Data = new
+                result.code = "1000";
+                result.data = new
                 {
                     //posts = listDisplayPost,
-                    NewItems = postResult[0].NewItems,
+                    new_items = postResult[0].NewItems.ToString(),
                     //LastID = postResult[0].PostID,
 
                 };
-                result.Message = "OK";
+                result.message = "OK";
             }
             catch (Exception ex)
             {

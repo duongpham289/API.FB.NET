@@ -14,12 +14,14 @@ namespace API.FB.Core.Controllers
     public class CommentController : ControllerBase
     {
         ICommentRepo _commentRepo;
+        IPostRepo _postRepo;
 
         IUserRepository _userRepository;
 
-        public CommentController(ICommentRepo commentRepo, IUserRepository userRepository)
+        public CommentController(ICommentRepo commentRepo, IPostRepo postRepo, IUserRepository userRepository)
         {
             _commentRepo = commentRepo;
+            _postRepo = postRepo;
             _userRepository = userRepository;
         }
 
@@ -31,28 +33,36 @@ namespace API.FB.Core.Controllers
             {
                 var token = comment.Token;
                 var postId = comment.PostID;
-                var index = comment.PageIndex;
-                var count = comment.PageSize;
+                var index = comment.index;
+                var count = comment.count;
+
+                bool postExist = _postRepo.CheckPostExist(postId);
+                if (!postExist)
+                {
+                    result.code = "9992";
+                    result.message = "Post is not existed";
+                    return result;
+                }
 
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
                 else if (user.Token != token)
                 {
 
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
                 if (index == null || count == null)
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
@@ -66,13 +76,13 @@ namespace API.FB.Core.Controllers
                     {
                         var temp = new
                         {
-                            CommentContent = item.CommentContent,
-                            Created = item.CreatedDate,
-                            Poster = new
+                            content = item.content,
+                            created = item.CreatedDate,
+                            poster = new
                             {
-                                UserID = item.UserID,
-                                UsserName = item.FullName,
-                                Avatar = item.Avatar,
+                                id = item.UserID,
+                                username = item.FullName,
+                                avatar = item.Avatar,
                             }
 
                         };
@@ -82,12 +92,12 @@ namespace API.FB.Core.Controllers
 
 
                 }
-                result.ResponseCode = 1000;
-                result.Message = "OK";
-                result.Data = new
+                result.code = "1000";
+                result.message = "OK";
+                result.data = new
                 {
-                    PostID = postId,
-                    Comment = listDisplayComment
+                    id = postId.ToString(),
+                    comment = listDisplayComment
                 };
                 return result;
             }
@@ -107,37 +117,37 @@ namespace API.FB.Core.Controllers
             {
                 var token = comment.Token;
                 var postId = comment.PostID;
-                var commentContent = comment.CommentContent;
-                var index = comment.PageIndex;
-                var count = comment.PageSize;
+                var commentContent = comment.content;
+                var index = comment.index;
+                var count = comment.count;
 
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
                 else if (user.Token != token)
                 {
 
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
 
                 if (String.IsNullOrWhiteSpace(commentContent) || comment.PostID == null)
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
                 if (commentContent.Length > 65.535)
                 {
-                    result.ResponseCode = 1006;
-                    result.Message = "Độ dài đầu vào quá mức cho phép";
+                    result.code = "1004";
+                    result.message = "Parameter value is invalid";
                     return result;
                 }
 
@@ -151,13 +161,13 @@ namespace API.FB.Core.Controllers
                 {
                     var temp = new
                     {
-                        CommentContent = item.CommentContent,
-                        Created = item.CreatedDate,
-                        Poster = new
+                        content = item.content,
+                        created = item.CreatedDate,
+                        poster = new
                         {
-                            UserID = item.UserID,
-                            UsserName = item.FullName,
-                            Avatar = item.Avatar,
+                            id = item.UserID,
+                            username = item.FullName,
+                            avatar = item.Avatar,
                         }
 
                     };
@@ -166,12 +176,12 @@ namespace API.FB.Core.Controllers
                 }
 
 
-                result.ResponseCode = 1000;
-                result.Message = "OK";
-                result.Data = new
+                result.code = "1000";
+                result.message = "OK";
+                result.data = new
                 {
-                    PostID = postId,
-                    Comment = listDisplayComment
+                    id = postId,
+                    comment = listDisplayComment
                 };
                 return result;
             }

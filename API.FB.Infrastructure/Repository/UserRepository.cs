@@ -41,8 +41,8 @@ namespace API.FB.Infrastructure.Repository
             {
                 DynamicParameters parameters = new DynamicParameters();
                 parameters.Add("@EmployeeFilter", employeeFilter ?? String.Empty);
-                parameters.Add("@PageIndex", pageIndex);
-                parameters.Add("@PageSize", pageSize);
+                parameters.Add("@index", pageIndex);
+                parameters.Add("@count", pageSize);
                 parameters.Add("@TotalRecord", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
                 var data = _dbConnection.Query<User>($"Proc_GetEmployeeFilterPaging", param: parameters, commandType: CommandType.StoredProcedure);

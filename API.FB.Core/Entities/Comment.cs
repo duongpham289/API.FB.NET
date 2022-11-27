@@ -18,9 +18,9 @@ namespace API.FB.Core.Entities
 
         public string? Token { get; set; }
 
-        public string? CommentContent { get; set; }
+        public string? content { get; set; }
 
-        public int? PageIndex { get; set; }
-        public int? PageSize { get; set; }
+        public int? index { get; set; }
+        public int? count { get; set; }
     }
 }

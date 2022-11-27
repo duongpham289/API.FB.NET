@@ -46,8 +46,8 @@ namespace API.FB.Infrastructure.Repository
                 DynamicParameters parameters = new DynamicParameters();
                 parameters.Add("@v_LastID", post.last_id);
                 parameters.Add("@v_token", post.Token);
-                parameters.Add("@v_pageIndex", post.PageIndex ?? 1);
-                parameters.Add("@v_pageCount", post.PageCount ?? 10);
+                parameters.Add("@v_pageIndex", post.index ?? 1);
+                parameters.Add("@v_pageCount", post.count ?? 10);
 
                 var res = _dbConnection.QueryMultiple($"Proc_GetListPost", param: parameters, commandType: CommandType.StoredProcedure);
 

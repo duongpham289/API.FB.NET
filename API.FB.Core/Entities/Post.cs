@@ -100,11 +100,11 @@ namespace API.FB.Core.Entities
         /// <summary>
         /// iđ bài post gần nhất
         /// </summary>
-        public int? PageIndex { get; set; }
+        public int? index { get; set; }
         /// <summary>
         /// iđ bài post gần nhất
         /// </summary>
-        public int? PageCount{ get; set; }
+        public int? count{ get; set; }
 
     }
 }
