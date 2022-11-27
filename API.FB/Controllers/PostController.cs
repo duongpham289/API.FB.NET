@@ -1,6 +1,7 @@
 ﻿using API.FB.Core.Interfaces.Repository;
 using API.FB.Core.Entities;
 using API.FB.Core.Interfaces.Services;
+using API.FB.Core.FBAttribute;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Hosting;
 using System.Drawing;
 using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace CNWTT.Controllers
 {
@@ -29,166 +31,41 @@ namespace CNWTT.Controllers
         }
 
         /// <summary>
-        /// Lấy tất cả Code
+        /// Tạo bài viết mới
         /// </summary>
+        /// <param name="dic"></param>
         /// <returns></returns>
-        [HttpGet("get_list_post")]
-        public virtual ServiceResult GetListPost([FromQuery] Post post)
-        {
-            ServiceResult result = new ServiceResult();
-            try
-            {
-
-                var token = post.Token;
-                var latestPostID = post.LatestPostID;
-                var pageCount = post.PageCount;
-                var pageIndex = post.PageIndex;
-
-                User user = _userRepository.GetUserByToken(token);
-                if (user == null)
-                {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
-                    return result;
-                }
-
-                if (latestPostID == null || pageCount == null || pageIndex == null)
-                {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
-                    return result;
-                }
-
-                var listPost = _postRepo.GetListPost(post);
-
-
-                var listDisplayPost = new List<object>();
-
-                foreach (var item in listPost)
-                {
-                    byte[] bytes = Convert.FromBase64String(item.Image);
-
-                    Image image;
-                    using (MemoryStream ms = new MemoryStream(bytes))
-                    {
-                        image = Image.FromStream(ms);
-                    }
-
-                    var temp = new
-                    {
-                        PostID = item.PostID,
-                        Described = item.Described,
-                        Created = item.CreatedDate,
-                        Modified = item.ModifiedDate,
-                        Like = item.ReactCount,
-                        Comment = item.CommentCount,
-                        Is_liked = item.Is_liked,
-                        Image = image,
-                        Author = new
-                        {
-                            AuthorID = item.Author_id,
-                            AuthorName = item.Author_name,
-                            AuthorAvatar = item.Author_avatar,
-                        },
-                        Is_blocked = item.Is_blocked
-
-                    };
-
-                    listDisplayPost.Add(temp);
-                }
-
-                result.ResponseCode = 1000;
-                result.Data = new
-                {
-                    posts = listDisplayPost,
-                    NewItems = listPost[0].NewItems,
-                    LastID = listPost[0].PostID,
-
-                };
-                result.Message = "OK";
-            }
-            catch (Exception ex)
-            {
-                result.OnException(ex);
-            }
-            return result;
-
-        }
-
-        /// <summary>
-        /// Lấy tất cả Code
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet("check_new_item")]
-        public ServiceResult GetNewListPost([FromQuery] Post post)
+        [HttpPost("add_post")]
+        public ServiceResult Post([FromForm] Post post)
         {
 
             ServiceResult result = new ServiceResult();
             try
             {
                 var token = post.Token;
-                var latestPostID = post.LatestPostID;
+                var described = post.Described;
+                var imageList = post.Image;
+                var video = post.Video;
+                var status = post.Status;
 
-                User user = _userRepository.GetUserByToken(token);
-                if (user == null)
+                var properties = typeof(Post).GetProperties();
+
+                result = _postService.ValidateFile(result: result, post: post);
+
+                result = _postService.ValidateBeforeRepo(result: result, token: token, described: described, imageList: imageList, video: video);
+
+                if (!String.IsNullOrWhiteSpace(result.code))
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
                     return result;
                 }
 
-                if (latestPostID == null)
-                {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
-                    return result;
-                }
-                var listPost = _postRepo.GetNewListPost(post);
+                var postID = _postRepo.InsertPost(post);
 
-                var listDisplayPost = new List<object>();
+                result.code = "1000";
+                result.message = "OK";
+                result.data = new { id = postID.ToString() };
 
-                foreach (var item in listPost)
-                {
-                    byte[] bytes = Convert.FromBase64String(item.Image);
-
-                    Image image;
-                    using (MemoryStream ms = new MemoryStream(bytes))
-                    {
-                        image = Image.FromStream(ms);
-                    }
-
-                    var temp = new
-                    {
-                        PostID = item.PostID,
-                        Described = item.Described,
-                        Created = item.CreatedDate,
-                        Modified = item.ModifiedDate,
-                        Like = item.ReactCount,
-                        Comment = item.CommentCount,
-                        Is_liked = item.Is_liked,
-                        image,
-                        Author = new
-                        {
-                            AuthorID = item.Author_id,
-                            AuthorName = item.Author_name,
-                            AuthorAvatar = item.Author_avatar,
-                        },
-                        Is_blocked = item.Is_blocked
-
-                    };
-
-                    listDisplayPost.Add(temp);
-                }
-
-                result.ResponseCode = 1000;
-                result.Data = new
-                {
-                    //posts = listDisplayPost,
-                    NewItems = listPost[0].NewItems,
-                    //LastID = listPost[0].PostID,
-
-                };
-                result.Message = "OK";
+                return result;
             }
             catch (Exception ex)
             {
@@ -204,7 +81,7 @@ namespace CNWTT.Controllers
         /// <param name="dic"></param>
         /// <returns></returns>
         [HttpGet("get_post")]
-        public ServiceResult GetPost([FromQuery] Post post)
+        public ServiceResult GetPost([FromForm] Post post)
         {
 
             ServiceResult result = new ServiceResult();
@@ -213,117 +90,110 @@ namespace CNWTT.Controllers
                 var token = post.Token;
                 var postID = post.PostID;
 
-                User user = _userRepository.GetUserByToken(token);
-                if (user == null)
+                _postService.ValidateBeforeRepo(result: result, token: token, described: "hello", imageList: null, video: null);
+
+                if (!String.IsNullOrWhiteSpace(result.code))
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
                     return result;
                 }
 
-                if (postID == null)
+                var postResult = new List<Post>();
+                var postMedia = new List<MediaPost>();
+
+                var res = _postRepo.GetPost(post, out postResult, out postMedia);
+
+                if (postResult.Count <= 0)
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "9992";
+                    result.message = "Post is not existed";
                     return result;
                 }
 
+                string path = "C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\";
 
-                //dic.PostID = Guid.NewGuid();
-                var postResult = _postService.GetPost(post);
+                List<Image> imageList = new List<Image>();
+                List<string> videoList = new List<string>();
 
-                byte[] bytes = Convert.FromBase64String(postResult.Image);
-
-                Image image;
-                using (MemoryStream ms = new MemoryStream(bytes))
+                if (postMedia.Count > 0)
                 {
-                    image = Image.FromStream(ms);
-
-                    using (Bitmap bm2 = new Bitmap(ms))
+                    if ((bool)postMedia[0].IsImage)
                     {
-                        bm2.Save("C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\" + "API_FB.jpg");
+                        int index = 0;
+                        foreach (var media in postMedia)
+                        {
+                            byte[] bytes = Convert.FromBase64String(media.Image);
+
+                            try
+                            {
+                                using (MemoryStream ms = new MemoryStream(bytes))
+                                {
+                                    var image = Image.FromStream(ms);
+
+
+                                    using (Bitmap bm2 = new Bitmap(ms))
+                                    {
+                                        bm2.Save(path + "PostID_" + postResult[0].PostID + "_Image_" + index + ".jpg");
+                                    }
+
+                                    imageList.Add(image);
+
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                result.OnException(ex);
+                            }
+                            index++;
+                        }
+
+
                     }
+                    else
+                    {
+                        try
+                        {
+                            FileInfo video = new FileInfo(path + "PostID_" + postResult[0].PostID + "_Video.mp4");
+                            byte[] bytes = Convert.FromBase64String(postMedia[0].Video);
+
+                            using (Stream sw = video.OpenWrite())
+                            {
+                                sw.Write(bytes, 0, bytes.Length);
+                                sw.Close();
+                            }
+
+                            videoList.Add(video.FullName);
+                        }
+                        catch (Exception ex)
+                        {
+                            result.OnException(ex);
+                        }
+                    }
+
                 }
 
 
-                result.ResponseCode = 1000;
-                result.Message = "OK";
-                result.Data = new
+                result.code = "1000";
+                result.message = "OK";
+                result.data = new
                 {
-                    PostID = postResult.PostID,
-                    Described = postResult.Described,
-                    Created = postResult.CreatedDate,
-                    Modified = postResult.ModifiedDate,
-                    Like = postResult.ReactCount,
-                    Comment = postResult.CommentCount,
-                    Is_liked = postResult.Is_liked,
-                    image,
-                    Author = new
+                    id = postResult[0].PostID,
+                    described = postResult[0].Described,
+                    created = postResult[0].CreatedDate,
+                    modified = postResult[0].ModifiedDate,
+                    like = postResult[0].ReactCount,
+                    comment = postResult[0].CommentCount,
+                    is_liked = postResult[0].Is_liked,
+                    image = imageList,
+                    video = videoList,
+                    author = new
                     {
-                        AuthorID = postResult.Author_id,
-                        AuthorName = postResult.Author_name,
-                        AuthorAvatar = postResult.Author_avatar,
+                        authorid = postResult[0].Author_id,
+                        authorname = postResult[0].Author_name,
+                        authoravatar = postResult[0].Author_avatar,
                     },
-                    Is_blocked = postResult.Is_blocked,
+                    is_blocked = postResult[0].Is_blocked,
 
                 };
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                result.OnException(ex);
-            }
-            return result;
-
-        }
-
-        /// <summary>
-        /// Tạo bài viết mới
-        /// </summary>
-        /// <param name="dic"></param>
-        /// <returns></returns>
-        [HttpPost("add_post")]
-        public ServiceResult Post([FromForm] Post post)
-        {
-
-            ServiceResult result = new ServiceResult();
-            try
-            {
-                var token = post.Token;
-                var described = post.Described;
-                var media = post.Media;
-                var status = post.Status;
-
-                User user = _userRepository.GetUserByToken(token);
-                if (user == null)
-                {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
-                    return result;
-                }
-
-                if (String.IsNullOrWhiteSpace(described) || String.IsNullOrWhiteSpace(token))
-                {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
-                    return result;
-                }
-
-                if (described?.Length > 65.535)
-                {
-                    result.ResponseCode = 1006;
-                    result.Message = "Độ dài đầu vào quá mức cho phép";
-                    return result;
-                }
-
-
-                //dic.PostID = Guid.NewGuid();
-                var postID = _postService.InsertPost(post);
-
-                result.ResponseCode = 1000;
-                result.Message = "OK";
-                result.Data = new { PostID = postID };
 
                 return result;
             }
@@ -343,7 +213,7 @@ namespace CNWTT.Controllers
         /// <returns></returns>
         // PUT api/<MISABaseController>/5
         [HttpPut("edit_post")]
-        public ServiceResult Put([FromQuery] Post post)
+        public ServiceResult Put([FromForm] Post post)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -351,36 +221,40 @@ namespace CNWTT.Controllers
                 var token = post.Token;
                 var postID = post.PostID;
                 var described = post.Described;
-                var media = post.Media;
+                var imageList = post.Image;
+                var video = post.Video;
+                var listImageDelete = post.ListImageDelete;
                 var status = post.Status;
 
-                User user = _userRepository.GetUserByToken(token);
-                if (user == null)
+
+                bool permission = _postRepo.GetPermissionPostAction(post);
+                if (!permission)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
-                if (String.IsNullOrWhiteSpace(described) || postID == null)
+                result = _postService.ValidateFile(result: result, post: post);
+
+                result = _postService.ValidateBeforeRepo(result: result, token: token, described: described, imageList: imageList, video: video);
+
+                if (String.IsNullOrWhiteSpace(result.code))
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
                     return result;
                 }
 
-
-                if (described?.Length > 65.535)
+                if (postID == null)
                 {
-                    result.ResponseCode = 1006;
-                    result.Message = "Độ dài đầu vào quá mức cho phép";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
-                _postService.UpdatePost(post);
+                _postRepo.UpdatePost(post);
 
-                result.ResponseCode = 1000;
-                result.Message = "OK";
+                result.code = "1000";
+                result.message = "OK";
                 return result;
             }
             catch (Exception ex)
@@ -397,35 +271,50 @@ namespace CNWTT.Controllers
         /// <param name="entityId"> Id của đối tượng </param>
         /// <returns></returns>
         [HttpDelete("delete_post")]
-        public ServiceResult Delete([FromQuery] Post post)
+        public ServiceResult Delete([FromForm] Post post)
         {
             ServiceResult result = new ServiceResult();
 
             try
             {
                 var token = post.Token;
-                var postID = post.PostID.ToString();
+                var postID = post.PostID;
 
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
-                if (String.IsNullOrWhiteSpace(postID))
+                bool permission = _postRepo.GetPermissionPostAction(post);
+                if (!permission)
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1009";
+                    result.message = "Not access";
+                    return result;
+                }
+
+                if (postID == null)
+                {
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
 
                 var serviceResult = _postRepo.DeletePost(post);
 
-                result.ResponseCode = 1000;
-                result.Message = "OK";
+                result.code = "1000";
+                result.message = "OK";
                 return result;
             }
             catch (Exception ex)
@@ -442,8 +331,8 @@ namespace CNWTT.Controllers
         /// </summary>
         /// <param name="react"></param>
         /// <returns></returns>
-        [HttpPost("react_post")]
-        public ServiceResult LikeStatusChanged([FromQuery] React react)
+        [HttpPost("like")]
+        public ServiceResult LikeStatusChanged([FromForm] React react)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -455,24 +344,32 @@ namespace CNWTT.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
                 if (String.IsNullOrWhiteSpace(postID))
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
-                //react.ReactID = Guid.NewGuid();
-                var likeCount = _postService.React(react);
-                result.ResponseCode = 1000;
-                result.Message = "OK";
-                result.Data = new
+
+                var likeCount = _postRepo.ReactPost(react);
+
+                result.code = "1000";
+                result.message = "OK";
+                result.data = new
                 {
-                    LikeCount = likeCount
+                    like = likeCount
                 };
                 return result;
             }
@@ -485,7 +382,7 @@ namespace CNWTT.Controllers
 
 
         [HttpPost("report_post")]
-        public ServiceResult ReportPost([FromQuery] Report report)
+        public ServiceResult ReportPost([FromForm] Report report)
         {
             ServiceResult result = new ServiceResult();
             try
@@ -498,29 +395,44 @@ namespace CNWTT.Controllers
                 User user = _userRepository.GetUserByToken(token);
                 if (user == null)
                 {
-                    result.ResponseCode = 1009;
-                    result.Message = "Không có quyền truy cập tài nguyên";
+                    result.code = "1009";
+                    result.message = "Not access";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
+                    result.code = "1009";
+                    result.message = "Not access";
                     return result;
                 }
 
                 if (String.IsNullOrWhiteSpace(details) || String.IsNullOrWhiteSpace(subject) || postID == null)
                 {
-                    result.ResponseCode = 1002;
-                    result.Message = "Số lượng Parameter không đầy đủ";
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
                     return result;
                 }
 
                 if (subject.Length > 255 || details.Length > 65.535)
                 {
-                    result.ResponseCode = 1006;
-                    result.Message = "Độ dài đầu vào quá mức cho phép";
+                    result.code = "1006";
+                    result.message = "Parameter value is invalid";
                     return result;
                 }
 
-                _postService.ReportPost(report);
+                bool postExist = _postRepo.CheckPostExist(postID);
+                if (!postExist)
+                {
+                    result.code = "9992";
+                    result.message = "Post is not existed";
+                    return result;
+                }
 
-                result.ResponseCode = 1000;
-                result.Message = "OK";
+                _postRepo.ReportPost(report);
+
+                result.code = "1000";
+                result.message = "OK";
                 return result;
             }
             catch (Exception ex)
@@ -530,5 +442,315 @@ namespace CNWTT.Controllers
             return result;
 
         }
+
+        /// <summary>
+        /// Lấy tất cả code
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("get_list_post")]
+        public virtual ServiceResult GetListPost([FromForm] Post post)
+        {
+            ServiceResult result = new ServiceResult();
+            try
+            {
+
+                var token = post.Token;
+                var latestPostID = post.last_id;
+                var pageCount = post.count;
+                var pageIndex = post.index;
+
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.code = "1009";
+                    result.message = "Not access";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+
+                    result.code = "1009";
+                    result.message = "Not access";
+                    return result;
+                }
+
+                if (latestPostID == null || pageCount == null || pageIndex == null)
+                {
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
+                    return result;
+                }
+
+                var postResult = new List<Post>();
+                var postMedia = new List<MediaPost>();
+
+                var listPost = _postRepo.GetListPost(post, out postResult, out postMedia);
+
+                if (postResult.Count <= 0)
+                {
+                    result.code = "9992";
+                    result.message = "Post is not existed";
+                    return result;
+                }
+
+                var listDisplayPost = new List<object>();
+
+                foreach (var item in postResult)
+                {
+                    string path = "C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\";
+
+                    List<Image> imageList = new List<Image>();
+                    List<string> videoList = new List<string>();
+
+
+                    foreach (var media in postMedia)
+                    {
+                        if (item.PostID == media.PostID)
+                        {
+                            if ((bool)media.IsImage)
+                            {
+                                int index = 0;
+                                byte[] bytes = Convert.FromBase64String(media.Image);
+
+                                try
+                                {
+                                    using (MemoryStream ms = new MemoryStream(bytes))
+                                    {
+                                        var image = Image.FromStream(ms);
+
+
+                                        using (Bitmap bm2 = new Bitmap(ms))
+                                        {
+                                            bm2.Save(path + "PostID_" + item.PostID + "_Image_" + index + ".jpg");
+                                        }
+
+                                        imageList.Add(image);
+
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    result.OnException(ex);
+                                }
+                                index++;
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    FileInfo video = new FileInfo(path + "PostID_" + item.PostID + "_Video.mp4");
+                                    byte[] bytes = Convert.FromBase64String(media.Video);
+
+                                    using (Stream sw = video.OpenWrite())
+                                    {
+                                        sw.Write(bytes, 0, bytes.Length);
+                                        sw.Close();
+                                    }
+
+                                    videoList.Add(video.FullName);
+                                }
+                                catch (Exception ex)
+                                {
+                                    result.OnException(ex);
+                                }
+                            }
+                        }
+                    }
+
+                    var temp = new
+                    {
+                        id = item.PostID,
+                        described = item.Described,
+                        created = item.CreatedDate,
+                        modified = item.ModifiedDate,
+                        like = item.ReactCount,
+                        comment = item.CommentCount,
+                        is_liked = (bool)item.Is_liked ? "1" : "0",
+                        image = imageList,
+                        video = videoList,
+                        author = new
+                        {
+                            id = item.Author_id,
+                            username = item.Author_name,
+                            avatar = item.Author_avatar,
+                        },
+                        is_blocked = (bool)item.Is_blocked ? "1" : "0",
+
+                    };
+
+                    listDisplayPost.Add(temp);
+                }
+
+                result.code = "1000";
+                result.data = new
+                {
+                    posts = listDisplayPost,
+                    NewItems = postResult[0].NewItems,
+                    LastID = postResult[0].PostID,
+
+                };
+                result.message = "OK";
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
+
+        }
+
+        /// <summary>
+        /// Lấy tất cả code
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("check_new_item")]
+        public ServiceResult GetNewListPost([FromForm] Post post)
+        {
+
+            ServiceResult result = new ServiceResult();
+            try
+            {
+                var token = post.Token;
+                var latestPostID = post.last_id;
+
+                User user = _userRepository.GetUserByToken(token);
+                if (user == null)
+                {
+                    result.code = "1009";
+                    result.message = "Not access";
+                    return result;
+                }
+                else if (user.Token != token)
+                {
+                    result.code = "1009";
+                    result.message = "Not access";
+                    return result;
+                }
+
+                if (latestPostID == null)
+                {
+                    result.code = "1002";
+                    result.message = "Parameter is not enough";
+                    return result;
+                }
+
+                var postResult = new List<Post>();
+                var postMedia = new List<MediaPost>();
+
+                var listPost = _postRepo.GetNewListPost(post, out postResult, out postMedia);
+
+                if (postResult.Count <= 0)
+                {
+                    result.code = "9992";
+                    result.message = "Post is not existed";
+                    return result;
+                }
+
+                var listDisplayPost = new List<object>();
+
+                foreach (var item in postResult)
+                {
+                    string path = "C:\\Users\\DUONG.PH187315\\Desktop\\Pic\\";
+
+                    List<Image> imageList = new List<Image>();
+                    List<string> videoList = new List<string>();
+
+
+                    foreach (var media in postMedia)
+                    {
+                        if (item.PostID == media.PostID)
+                        {
+                            if ((bool)media.IsImage)
+                            {
+                                int index = 0;
+                                byte[] bytes = Convert.FromBase64String(media.Image);
+
+                                try
+                                {
+                                    using (MemoryStream ms = new MemoryStream(bytes))
+                                    {
+                                        var image = Image.FromStream(ms);
+
+
+                                        using (Bitmap bm2 = new Bitmap(ms))
+                                        {
+                                            bm2.Save(path + "PostID_" + item.PostID + "_Image_" + index + ".jpg");
+                                        }
+
+                                        imageList.Add(image);
+
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    result.OnException(ex);
+                                }
+                                index++;
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    FileInfo video = new FileInfo(path + "PostID_" + item.PostID + "_Video.mp4");
+                                    byte[] bytes = Convert.FromBase64String(media.Video);
+
+                                    using (Stream sw = video.OpenWrite())
+                                    {
+                                        sw.Write(bytes, 0, bytes.Length);
+                                        sw.Close();
+                                    }
+
+                                    videoList.Add(video.FullName);
+                                }
+                                catch (Exception ex)
+                                {
+                                    result.OnException(ex);
+                                }
+                            }
+                        }
+                    }
+
+                    var temp = new
+                    {
+                        id = item.PostID,
+                        described = item.Described,
+                        created = item.CreatedDate,
+                        modified = item.ModifiedDate,
+                        like = item.ReactCount,
+                        comment = item.CommentCount,
+                        is_liked = (bool)item.Is_liked ? "1" : "0",
+                        image = imageList,
+                        video = videoList,
+                        author = new
+                        {
+                            id = item.Author_id,
+                            username = item.Author_name,
+                            avatar = item.Author_avatar,
+                        },
+                        is_blocked = (bool)item.Is_blocked ? "1" : "0",
+
+                    };
+
+                    listDisplayPost.Add(temp);
+                }
+
+                result.code = "1000";
+                result.data = new
+                {
+                    //posts = listDisplayPost,
+                    new_items = postResult[0].NewItems.ToString(),
+                    //LastID = postResult[0].PostID,
+
+                };
+                result.message = "OK";
+            }
+            catch (Exception ex)
+            {
+                result.OnException(ex);
+            }
+            return result;
+
+        }
+
     }
 }

@@ -1,22 +1,18 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using API.FB.Core.Interfaces.Repository;
 using API.FB.Core.Interfaces.Services;
 using API.FB.Core.Services;
+using API.FB.Infrastructure.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using API.FB.Core.Interfaces.Services;
-using API.FB.Core.Services;
-using API.FB.Infrastructure.Repository;
-using API.FB.Core.Interfaces.Repository;
+
 namespace Web07.FinalTest.MF960
 {
     public class Startup
@@ -56,15 +52,16 @@ namespace Web07.FinalTest.MF960
             });
 
 
-            //services.AddScoped<IAuthService, AuthService>();
+            //Services DI:
+            services.AddScoped<IUserService, UserService>();
+
+            //Repository DI:
             services.AddScoped<IUserRepository, UserRepository>();
 
 
 
-            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IAuthRepo, AuthRepo>();
 
-            services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<ICommentRepo, CommentRepo>();
 
             services.AddScoped<IPostService, PostService>();
@@ -72,15 +69,14 @@ namespace Web07.FinalTest.MF960
 
 
             services.AddScoped(typeof(IBaseRepo<>), typeof(BaseRepo<>));
-            services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
 
-
-            services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<ICommentRepo, CommentRepo>();
 
             services.AddScoped<IPostService, PostService>();
             services.AddScoped<IPostRepo, PostRepo>();
 
+            //Base DI:
+            //services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

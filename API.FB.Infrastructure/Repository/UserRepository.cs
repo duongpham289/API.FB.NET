@@ -41,8 +41,8 @@ namespace API.FB.Infrastructure.Repository
             {
                 DynamicParameters parameters = new DynamicParameters();
                 parameters.Add("@EmployeeFilter", employeeFilter ?? String.Empty);
-                parameters.Add("@PageIndex", pageIndex);
-                parameters.Add("@PageSize", pageSize);
+                parameters.Add("@index", pageIndex);
+                parameters.Add("@count", pageSize);
                 parameters.Add("@TotalRecord", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
                 var data = _dbConnection.Query<User>($"Proc_GetEmployeeFilterPaging", param: parameters, commandType: CommandType.StoredProcedure);
@@ -127,7 +127,7 @@ namespace API.FB.Infrastructure.Repository
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public int Insert(User user)
+        public string Insert(User user)
         {
             using (_dbConnection = new MySqlConnection(_configuration.GetConnectionString("SqlConnection")))
             {
@@ -137,7 +137,7 @@ namespace API.FB.Infrastructure.Repository
                 parameters.Add("@v_username", user.FullName);
                 parameters.Add("@v_avatar", user.Avatar);
 
-                var data = _dbConnection.Execute($"Proc_InsertUser", param: parameters, commandType: CommandType.StoredProcedure);
+                var data = _dbConnection.QueryFirstOrDefault<string>($"Proc_InsertUser", param: parameters, commandType: CommandType.StoredProcedure);
 
                 return data;
             }

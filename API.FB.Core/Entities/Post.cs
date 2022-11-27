@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using API.FB.Core.FBAttribute;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -11,7 +12,7 @@ namespace API.FB.Core.Entities
 {
     public class Post : BaseEntity
     {
-        public int PostID { get; set; }
+        public int? PostID { get; set; }
 
         public Guid UserID { get; set; }
 
@@ -19,11 +20,19 @@ namespace API.FB.Core.Entities
 
         public string? Described { get; set; }
 
-        public IFormFile? Media { get; set; }
+        [DataType(DataType.Upload)]
+        [MaxFileSize(5 * 1024 * 1024)] // 5MB
+        [AllowedExtensions(new string[] { ".mp4", ".mkv" })]
+        public List<IFormFile>? Video { get; set; }
 
-        public string? Image { get; set; }
+        [DataType(DataType.Upload)]
+        [MaxFileSize(1 * 1024 * 1024)] // 1MB
+        [AllowedExtensions(new string[] { ".jpg", ".png" })]
+        public List<IFormFile>? Image { get; set; }
+        public string? ListImageDelete { get; set; }
 
         public int? Status { get; set; }
+        public IFormFile? Media { get; set; }
 
         /// <summary>
         /// Số like
@@ -82,20 +91,20 @@ namespace API.FB.Core.Entities
         /// <summary>
         /// Trang thái online của tác giả
         /// </summary>
-        public bool? author_onlike { get; set; }
+        public bool? author_online { get; set; }
 
         /// <summary>
         /// iđ bài post gần nhất
         /// </summary>
-        public int? LatestPostID { get; set; }
+        public int? last_id { get; set; }
         /// <summary>
         /// iđ bài post gần nhất
         /// </summary>
-        public int? PageIndex { get; set; }
+        public int? index { get; set; }
         /// <summary>
         /// iđ bài post gần nhất
         /// </summary>
-        public int? PageCount{ get; set; }
+        public int? count{ get; set; }
 
     }
 }

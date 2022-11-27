@@ -28,8 +28,8 @@ namespace API.FB.Infrastructure.Repository
                 DynamicParameters parameters = new DynamicParameters();
                 parameters.Add("@v_postID", comment.PostID);
                 parameters.Add("@v_token", comment.Token);
-                parameters.Add("@v_index", comment.PageIndex ?? 1);
-                parameters.Add("@v_count", comment.PageSize ?? 10);
+                parameters.Add("@v_index", comment.index);
+                parameters.Add("@v_count", comment.count ?? 10);
 
                 var data = _dbConnection.Query<Comment>($"Proc_GetComment", param: parameters, commandType: CommandType.StoredProcedure).ToList();
 
@@ -45,9 +45,9 @@ namespace API.FB.Infrastructure.Repository
                 DynamicParameters parameters = new DynamicParameters();
                 parameters.Add("@v_postID", comment.PostID);
                 parameters.Add("@v_token", comment.Token);
-                parameters.Add("@v_comment", comment.CommentContent);
-                parameters.Add("@v_index", comment.PageIndex ?? 1);
-                parameters.Add("@v_count", comment.PageSize ?? 10);
+                parameters.Add("@v_comment", comment.content);
+                parameters.Add("@v_index", comment.index ?? 1);
+                parameters.Add("@v_count", comment.count ?? 10);
 
                 var data = _dbConnection.Query<Comment>($"Proc_InsertComment", param: parameters, commandType: CommandType.StoredProcedure).ToList();
 
